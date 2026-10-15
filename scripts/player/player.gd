@@ -41,10 +41,18 @@ signal died
 func _ready() -> void:
 	if stats == null:
 		stats = PlayerStats.new()
-	health = stats.max_health
-	health_changed.emit(health, stats.max_health)
+	health = PlayerState.current_health
+	PlayerState.changed.connect(_on_gear_changed)
+	health_changed.emit(health, PlayerState.max_health())
 	melee.monitoring = false
 	melee.body_entered.connect(_on_melee_body_entered)
+
+
+func _on_gear_changed() -> void:
+	if dying:
+		return
+	health = PlayerState.current_health
+	health_changed.emit(health, PlayerState.max_health())
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -66,7 +74,8 @@ func take_damage(amount: int) -> void:
 	if dying or hurt_left > 0.0:
 		return
 	health = maxi(health - amount, 0)
-	health_changed.emit(health, stats.max_health)
+	PlayerState.current_health = health
+	health_changed.emit(health, PlayerState.max_health())
 	hurt_left = HURT_TIME
 	knock_left = 0.16
 	sprite.modulate = Color(1.0, 0.45, 0.4)
@@ -90,6 +99,7 @@ func _die() -> void:
 	set_physics_process(false)
 	var timer := get_tree().create_timer(0.7)
 	timer.timeout.connect(func() -> void:
+		PlayerState.refill()
 		get_tree().paused = false
 		get_tree().reload_current_scene()
 	)
@@ -144,7 +154,7 @@ func _update_attack(delta: float) -> void:
 		melee.monitoring = attack_time < strike_end
 		if striking:
 			for body in melee.get_overlapping_bodies():
-				_damage_once(body, stats.melee_damage)
+				_damage_once(body, PlayerState.melee_damage())
 		if attack_time >= strike_end:
 			attack_time = -1.0
 			melee.monitoring = false
@@ -171,7 +181,7 @@ func _update_cast(delta: float) -> void:
 	cast_cooldown_left = CAST_COOLDOWN
 	var bolt: Node = BOLT_SCENE.instantiate()
 	bolt.set("direction", facing)
-	bolt.set("damage", stats.bolt_damage)
+	bolt.set("damage", PlayerState.bolt_damage())
 	var spawn_pos := bolt_spawn.global_position
 	get_parent().add_child(bolt)
 	bolt.global_position = spawn_pos
@@ -181,7 +191,7 @@ func _on_melee_body_entered(body: Node) -> void:
 	var strike_end := ATTACK_WINDUP + ATTACK_ACTIVE
 	if attack_time < ATTACK_WINDUP or attack_time >= strike_end:
 		return
-	_damage_once(body, stats.melee_damage)
+	_damage_once(body, PlayerState.melee_damage())
 
 
 func _damage_once(body: Node, amount: int) -> void:

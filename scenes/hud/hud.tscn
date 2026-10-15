@@ -9,12 +9,32 @@ script = ExtResource("1_hud")
 [node name="HintLabel" type="Label" parent="."]
 offset_left = 16.0
 offset_top = 8.0
-offset_right = 520.0
-offset_bottom = 28.0
+offset_right = 500.0
+offset_bottom = 26.0
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.95, 0.91, 0.84, 1)
 theme_override_font_sizes/font_size = 14
-text = "Kill both, then enter the exit"
+text = "Kill the goblin, then enter the exit"
+
+[node name="GoblinLabel" type="Label" parent="."]
+offset_left = 16.0
+offset_top = 28.0
+offset_right = 320.0
+offset_bottom = 46.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.95, 0.91, 0.84, 1)
+theme_override_font_sizes/font_size = 14
+text = "Goblin 30/30"
+
+[node name="ShooterLabel" type="Label" parent="."]
+offset_left = 16.0
+offset_top = 48.0
+offset_right = 320.0
+offset_bottom = 66.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.95, 0.91, 0.84, 1)
+theme_override_font_sizes/font_size = 14
+text = "Shooter 22/22"
 
 [node name="Dimmer" type="ColorRect" parent="."]
 visible = false
@@ -26,79 +46,132 @@ grow_vertical = 2
 mouse_filter = 0
 color = Color(0, 0, 0, 0.55)
 
-[node name="StatsPanel" type="ColorRect" parent="."]
+[node name="GearPanel" type="ColorRect" parent="."]
 visible = false
-offset_left = 160.0
-offset_top = 78.0
-offset_right = 480.0
-offset_bottom = 294.0
+offset_left = 90.0
+offset_top = 36.0
+offset_right = 550.0
+offset_bottom = 328.0
 mouse_filter = 0
 color = Color(0.09, 0.08, 0.08, 0.94)
 
-[node name="Title" type="Label" parent="StatsPanel"]
+[node name="CharacterTab" type="Button" parent="GearPanel"]
 offset_left = 16.0
 offset_top = 12.0
-offset_right = 304.0
-offset_bottom = 36.0
-mouse_filter = 2
-theme_override_colors/font_color = Color(0.95, 0.91, 0.84, 1)
-theme_override_font_sizes/font_size = 18
-text = "Stats"
+offset_right = 156.0
+offset_bottom = 40.0
+theme_override_font_sizes/font_size = 14
+text = "Character"
 
-[node name="HealthLabel" type="Label" parent="StatsPanel"]
+[node name="InventoryTab" type="Button" parent="GearPanel"]
+offset_left = 168.0
+offset_top = 12.0
+offset_right = 308.0
+offset_bottom = 40.0
+theme_override_font_sizes/font_size = 14
+text = "Inventory"
+
+[node name="CharacterPage" type="Control" parent="GearPanel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 48.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="WeaponButton" type="Button" parent="GearPanel/CharacterPage"]
+offset_left = 16.0
+offset_top = 8.0
+offset_right = 360.0
+offset_bottom = 40.0
+theme_override_font_sizes/font_size = 14
+text = "Weapon: Empty"
+
+[node name="ArmorButton" type="Button" parent="GearPanel/CharacterPage"]
 offset_left = 16.0
 offset_top = 48.0
-offset_right = 304.0
-offset_bottom = 72.0
+offset_right = 360.0
+offset_bottom = 80.0
+theme_override_font_sizes/font_size = 14
+text = "Armor: Empty"
+
+[node name="AccessoryButton" type="Button" parent="GearPanel/CharacterPage"]
+offset_left = 16.0
+offset_top = 88.0
+offset_right = 360.0
+offset_bottom = 120.0
+theme_override_font_sizes/font_size = 14
+text = "Accessory: Empty"
+
+[node name="HealthLabel" type="Label" parent="GearPanel/CharacterPage"]
+offset_left = 16.0
+offset_top = 136.0
+offset_right = 360.0
+offset_bottom = 160.0
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.95, 0.91, 0.84, 1)
 theme_override_font_sizes/font_size = 16
 text = "Health 100/100"
 
-[node name="MeleeLabel" type="Label" parent="StatsPanel"]
+[node name="MeleeLabel" type="Label" parent="GearPanel/CharacterPage"]
 offset_left = 16.0
-offset_top = 80.0
-offset_right = 304.0
-offset_bottom = 104.0
+offset_top = 164.0
+offset_right = 360.0
+offset_bottom = 188.0
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.95, 0.91, 0.84, 1)
 theme_override_font_sizes/font_size = 16
 text = "Melee 10"
 
-[node name="BoltLabel" type="Label" parent="StatsPanel"]
+[node name="BoltLabel" type="Label" parent="GearPanel/CharacterPage"]
 offset_left = 16.0
-offset_top = 112.0
-offset_right = 304.0
-offset_bottom = 136.0
+offset_top = 192.0
+offset_right = 360.0
+offset_bottom = 216.0
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.95, 0.91, 0.84, 1)
 theme_override_font_sizes/font_size = 16
 text = "Bolt 8"
 
-[node name="GoblinLabel" type="Label" parent="StatsPanel"]
-offset_left = 16.0
-offset_top = 144.0
-offset_right = 304.0
-offset_bottom = 168.0
+[node name="InventoryPage" type="Control" parent="GearPanel"]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 48.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
-theme_override_colors/font_color = Color(0.95, 0.91, 0.84, 1)
-theme_override_font_sizes/font_size = 16
-text = "Goblin 30/30"
 
-[node name="ShooterLabel" type="Label" parent="StatsPanel"]
+[node name="ItemButton0" type="Button" parent="GearPanel/InventoryPage"]
 offset_left = 16.0
-offset_top = 176.0
-offset_right = 304.0
-offset_bottom = 200.0
-mouse_filter = 2
-theme_override_colors/font_color = Color(0.95, 0.91, 0.84, 1)
-theme_override_font_sizes/font_size = 16
-text = "Shooter 22/22"
+offset_top = 8.0
+offset_right = 360.0
+offset_bottom = 40.0
+theme_override_font_sizes/font_size = 14
+text = "Sword"
 
-[node name="StatsButton" type="Button" parent="."]
+[node name="ItemButton1" type="Button" parent="GearPanel/InventoryPage"]
+offset_left = 16.0
+offset_top = 48.0
+offset_right = 360.0
+offset_bottom = 80.0
+theme_override_font_sizes/font_size = 14
+text = "Armor"
+
+[node name="ItemButton2" type="Button" parent="GearPanel/InventoryPage"]
+offset_left = 16.0
+offset_top = 88.0
+offset_right = 360.0
+offset_bottom = 120.0
+theme_override_font_sizes/font_size = 14
+text = "Charm"
+
+[node name="GearButton" type="Button" parent="."]
 offset_left = 548.0
 offset_top = 8.0
 offset_right = 628.0
 offset_bottom = 36.0
 theme_override_font_sizes/font_size = 14
-text = "Stats"
+text = "Gear"
