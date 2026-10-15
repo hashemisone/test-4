@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="PackedScene" path="res://scenes/level/test_room.tscn" id="2_room"]
 [ext_resource type="PackedScene" path="res://scenes/enemy/dummy.tscn" id="3_dummy"]
+[ext_resource type="PackedScene" path="res://scenes/enemy/shooter.tscn" id="7_shooter"]
 [ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="4_player"]
 [ext_resource type="PackedScene" path="res://scenes/hud/hud.tscn" id="5_hud"]
 [ext_resource type="PackedScene" path="res://scenes/exit/exit.tscn" id="6_exit"]
@@ -13,7 +14,10 @@ script = ExtResource("1_main")
 [node name="TestRoom" parent="." instance=ExtResource("2_room")]
 
 [node name="Dummy" parent="." instance=ExtResource("3_dummy")]
-position = Vector2(280, 320)
+position = Vector2(240, 320)
+
+[node name="Shooter" parent="." instance=ExtResource("7_shooter")]
+position = Vector2(390, 320)
 
 [node name="Player" parent="." instance=ExtResource("4_player")]
 position = Vector2(96, 320)

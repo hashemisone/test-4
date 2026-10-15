@@ -14,7 +14,7 @@ offset_bottom = 28.0
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.95, 0.91, 0.84, 1)
 theme_override_font_sizes/font_size = 14
-text = "Kill the goblin, then enter the exit"
+text = "Kill both, then enter the exit"
 
 [node name="Dimmer" type="ColorRect" parent="."]
 visible = false
@@ -31,7 +31,7 @@ visible = false
 offset_left = 160.0
 offset_top = 78.0
 offset_right = 480.0
-offset_bottom = 262.0
+offset_bottom = 294.0
 mouse_filter = 0
 color = Color(0.09, 0.08, 0.08, 0.94)
 
@@ -84,6 +84,16 @@ mouse_filter = 2
 theme_override_colors/font_color = Color(0.95, 0.91, 0.84, 1)
 theme_override_font_sizes/font_size = 16
 text = "Goblin 30/30"
+
+[node name="ShooterLabel" type="Label" parent="StatsPanel"]
+offset_left = 16.0
+offset_top = 176.0
+offset_right = 304.0
+offset_bottom = 200.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.95, 0.91, 0.84, 1)
+theme_override_font_sizes/font_size = 16
+text = "Shooter 22/22"
 
 [node name="StatsButton" type="Button" parent="."]
 offset_left = 548.0

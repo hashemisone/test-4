@@ -1,0 +1,27 @@
+[gd_scene format=3 uid="uid://d8f0h2k4m6p8r"]
+
+[ext_resource type="Script" path="res://scripts/enemy/shooter.gd" id="1_shooter"]
+[ext_resource type="SpriteFrames" path="res://resources/enemy/dummy_frames.tres" id="2_frames"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
+size = Vector2(34, 64)
+
+[node name="Shooter" type="CharacterBody2D" groups=["enemy"]]
+collision_layer = 4
+collision_mask = 1
+script = ExtResource("1_shooter")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+texture_filter = 1
+modulate = Color(0.62, 0.72, 1.2, 1)
+position = Vector2(0, -39.1)
+sprite_frames = ExtResource("2_frames")
+animation = &"idle"
+autoplay = "idle"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -32)
+shape = SubResource("RectangleShape2D_body")
+
+[node name="Muzzle" type="Marker2D" parent="."]
+position = Vector2(28, -36)
