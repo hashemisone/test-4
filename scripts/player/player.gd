@@ -11,6 +11,7 @@ const ATTACK_WINDUP := 0.08
 const ATTACK_ACTIVE := 0.14
 const ATTACK_COOLDOWN := 0.42
 const CAST_COOLDOWN := 0.38
+const HURT_TIME := 0.55
 
 @export var stats: PlayerStats
 
@@ -29,12 +30,19 @@ var cast_cooldown_left := 0.0
 var attack_queued := false
 var cast_queued := false
 var hit_ids: Array[int] = []
+var hurt_left := 0.0
+var knock_left := 0.0
+var dying := false
+
+signal health_changed(current: int, maximum: int)
+signal died
 
 
 func _ready() -> void:
 	if stats == null:
 		stats = PlayerStats.new()
 	health = stats.max_health
+	health_changed.emit(health, stats.max_health)
 	melee.monitoring = false
 	melee.body_entered.connect(_on_melee_body_entered)
 
@@ -50,11 +58,56 @@ func _unhandled_input(event: InputEvent) -> void:
 		cast_queued = true
 
 
+func is_alive() -> bool:
+	return not dying and health > 0
+
+
+func take_damage(amount: int) -> void:
+	if dying or hurt_left > 0.0:
+		return
+	health = maxi(health - amount, 0)
+	health_changed.emit(health, stats.max_health)
+	hurt_left = HURT_TIME
+	knock_left = 0.16
+	sprite.modulate = Color(1.0, 0.45, 0.4)
+	var foe := get_tree().get_first_node_in_group("enemy")
+	var away := float(-facing)
+	if foe != null:
+		away = signf(global_position.x - foe.global_position.x)
+		if away == 0.0:
+			away = float(-facing)
+	velocity.x = away * 170.0
+	velocity.y = -150.0
+	if health == 0:
+		_die()
+
+
+func _die() -> void:
+	if dying:
+		return
+	dying = true
+	died.emit()
+	set_physics_process(false)
+	var timer := get_tree().create_timer(0.7)
+	timer.timeout.connect(func() -> void:
+		get_tree().reload_current_scene()
+	)
+
+
 func _physics_process(delta: float) -> void:
+	if dying:
+		return
+	if hurt_left > 0.0:
+		hurt_left = maxf(hurt_left - delta, 0.0)
+		if hurt_left <= 0.0:
+			sprite.modulate = Color.WHITE
 	var direction := Input.get_axis("move_left", "move_right")
 	if direction != 0.0:
 		facing = 1 if direction > 0.0 else -1
-	velocity.x = direction * SPEED
+	if knock_left > 0.0:
+		knock_left = maxf(knock_left - delta, 0.0)
+	else:
+		velocity.x = direction * SPEED
 	if is_on_floor():
 		coyote_left = COYOTE_TIME
 		if velocity.y > 0.0:

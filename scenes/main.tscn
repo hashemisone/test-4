@@ -5,6 +5,7 @@
 [ext_resource type="PackedScene" path="res://scenes/enemy/dummy.tscn" id="3_dummy"]
 [ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="4_player"]
 [ext_resource type="PackedScene" path="res://scenes/hud/hud.tscn" id="5_hud"]
+[ext_resource type="PackedScene" path="res://scenes/exit/exit.tscn" id="6_exit"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_main")
@@ -16,5 +17,8 @@ position = Vector2(280, 320)
 
 [node name="Player" parent="." instance=ExtResource("4_player")]
 position = Vector2(96, 320)
+
+[node name="Exit" parent="." instance=ExtResource("6_exit")]
+position = Vector2(580, 240)
 
 [node name="HUD" parent="." instance=ExtResource("5_hud")]
