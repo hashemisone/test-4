@@ -13,6 +13,7 @@ func _ready() -> void:
 	)
 	hud.show_target(dummy.health, dummy.max_health)
 	hud.show_player(player.health, player.stats.max_health)
+	hud.show_offense(player.stats.melee_damage, player.stats.bolt_damage)
 
 
 func _on_room_clear() -> void:

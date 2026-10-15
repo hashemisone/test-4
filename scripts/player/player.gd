@@ -90,6 +90,7 @@ func _die() -> void:
 	set_physics_process(false)
 	var timer := get_tree().create_timer(0.7)
 	timer.timeout.connect(func() -> void:
+		get_tree().paused = false
 		get_tree().reload_current_scene()
 	)
 

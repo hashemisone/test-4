@@ -16,4 +16,5 @@ func _on_body_entered(body: Node) -> void:
 	if not visible:
 		return
 	if body.is_in_group("player"):
+		get_tree().paused = false
 		get_tree().reload_current_scene()

@@ -3,42 +3,92 @@
 [ext_resource type="Script" path="res://scripts/hud/hud.gd" id="1_hud"]
 
 [node name="HUD" type="CanvasLayer"]
+process_mode = 3
 script = ExtResource("1_hud")
 
-[node name="Panel" type="ColorRect" parent="."]
-offset_left = 8.0
-offset_top = 6.0
-offset_right = 430.0
-offset_bottom = 70.0
-mouse_filter = 2
-color = Color(0.05, 0.04, 0.04, 0.55)
-
-[node name="PlayerLabel" type="Label" parent="."]
+[node name="HintLabel" type="Label" parent="."]
 offset_left = 16.0
 offset_top = 8.0
-offset_right = 420.0
-offset_bottom = 26.0
+offset_right = 520.0
+offset_bottom = 28.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.95, 0.91, 0.84, 1)
+theme_override_font_sizes/font_size = 14
+text = "Kill the goblin, then enter the exit"
+
+[node name="Dimmer" type="ColorRect" parent="."]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0, 0, 0, 0.55)
+
+[node name="StatsPanel" type="ColorRect" parent="."]
+visible = false
+offset_left = 160.0
+offset_top = 78.0
+offset_right = 480.0
+offset_bottom = 262.0
+mouse_filter = 0
+color = Color(0.09, 0.08, 0.08, 0.94)
+
+[node name="Title" type="Label" parent="StatsPanel"]
+offset_left = 16.0
+offset_top = 12.0
+offset_right = 304.0
+offset_bottom = 36.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.95, 0.91, 0.84, 1)
+theme_override_font_sizes/font_size = 18
+text = "Stats"
+
+[node name="HealthLabel" type="Label" parent="StatsPanel"]
+offset_left = 16.0
+offset_top = 48.0
+offset_right = 304.0
+offset_bottom = 72.0
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.95, 0.91, 0.84, 1)
 theme_override_font_sizes/font_size = 16
-text = "You 100/100"
+text = "Health 100/100"
 
-[node name="TargetLabel" type="Label" parent="."]
+[node name="MeleeLabel" type="Label" parent="StatsPanel"]
 offset_left = 16.0
-offset_top = 26.0
-offset_right = 420.0
-offset_bottom = 44.0
+offset_top = 80.0
+offset_right = 304.0
+offset_bottom = 104.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.95, 0.91, 0.84, 1)
+theme_override_font_sizes/font_size = 16
+text = "Melee 10"
+
+[node name="BoltLabel" type="Label" parent="StatsPanel"]
+offset_left = 16.0
+offset_top = 112.0
+offset_right = 304.0
+offset_bottom = 136.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.95, 0.91, 0.84, 1)
+theme_override_font_sizes/font_size = 16
+text = "Bolt 8"
+
+[node name="GoblinLabel" type="Label" parent="StatsPanel"]
+offset_left = 16.0
+offset_top = 144.0
+offset_right = 304.0
+offset_bottom = 168.0
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.95, 0.91, 0.84, 1)
 theme_override_font_sizes/font_size = 16
 text = "Goblin 30/30"
 
-[node name="HintLabel" type="Label" parent="."]
-offset_left = 16.0
-offset_top = 46.0
-offset_right = 420.0
-offset_bottom = 66.0
-mouse_filter = 2
-theme_override_colors/font_color = Color(0.78, 0.74, 0.66, 1)
-theme_override_font_sizes/font_size = 12
-text = "Kill the goblin, then enter the exit"
+[node name="StatsButton" type="Button" parent="."]
+offset_left = 548.0
+offset_top = 8.0
+offset_right = 628.0
+offset_bottom = 36.0
+theme_override_font_sizes/font_size = 14
+text = "Stats"
