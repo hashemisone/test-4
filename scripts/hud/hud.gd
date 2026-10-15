@@ -35,9 +35,9 @@ func _ready() -> void:
 	_bind_slot($GearPanel/CharacterPage/SwordButton, ItemData.Slot.WEAPON, "sword")
 	_bind_slot($GearPanel/CharacterPage/BootsButton, ItemData.Slot.BOOTS, "boots")
 	_bind_slot($GearPanel/CharacterPage/ArmorButton, ItemData.Slot.ARMOR, "armor")
-	_bind_slot($GearPanel/CharacterPage/OffhandButton, ItemData.Slot.OFFHAND, "sword/shield")
+	_bind_slot($GearPanel/CharacterPage/OffhandButton, ItemData.Slot.OFFHAND, "sword/\nshield")
 	_bind_slot($GearPanel/CharacterPage/TrinketButton, ItemData.Slot.ACCESSORY, "trinket")
-	for index in 10:
+	for index in 9:
 		var slot_button := get_node("GearPanel/InventoryPage/Slot%d" % index) as Button
 		_bag_buttons.append(slot_button)
 		slot_button.pressed.connect(_equip_from_bag.bind(index))
