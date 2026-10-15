@@ -9,6 +9,7 @@ var goblin_health := 30
 var goblin_max_health := 30
 var shooter_health := 22
 var shooter_max_health := 22
+var show_shooter_row := true
 
 @onready var hint_label: Label = $HintLabel
 @onready var stats_button: Button = $StatsButton
@@ -54,6 +55,11 @@ func show_shooter(current: int, maximum: int) -> void:
 	_refresh_stats()
 
 
+func hide_shooter() -> void:
+	show_shooter_row = false
+	_refresh_stats()
+
+
 func show_offense(melee: int, bolt: int) -> void:
 	melee_damage = melee
 	bolt_damage = bolt
@@ -89,6 +95,7 @@ func _refresh_stats() -> void:
 		goblin_label.text = "Goblin %d/%d" % [goblin_health, goblin_max_health]
 	if shooter_label == null:
 		return
+	shooter_label.visible = show_shooter_row
 	if shooter_health <= 0:
 		shooter_label.text = "Shooter down"
 	else:

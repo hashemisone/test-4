@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://d8f0h2k4m6p8r"]
+[gd_scene format=3 uid="uid://d04v0nu2yuh0"]
 
 [ext_resource type="Script" path="res://scripts/enemy/shooter.gd" id="1_shooter"]
 [ext_resource type="SpriteFrames" path="res://resources/enemy/dummy_frames.tres" id="2_frames"]
