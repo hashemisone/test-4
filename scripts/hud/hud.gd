@@ -26,6 +26,8 @@ var _slot_buttons: Array[Button] = []
 var _slot_kinds: Array[ItemData.Slot] = []
 var _slot_captions: Array[String] = []
 var _bag_buttons: Array[Button] = []
+var _tab_idle: StyleBoxFlat
+var _tab_on: StyleBoxFlat
 
 
 func _ready() -> void:
@@ -41,11 +43,41 @@ func _ready() -> void:
 		var slot_button := get_node("GearPanel/InventoryPage/Slot%d" % index) as Button
 		_bag_buttons.append(slot_button)
 		slot_button.pressed.connect(_equip_from_bag.bind(index))
+	for button in _slot_buttons:
+		_add_icon(button)
+	for button in _bag_buttons:
+		_add_icon(button)
+	_tab_idle = _make_tab_style(Color(1, 1, 1, 1))
+	_tab_on = _make_tab_style(Color(0.12, 0.12, 0.12, 1))
 	gear_button.pressed.connect(toggle_gear)
 	character_tab_button.pressed.connect(_show_character_tab)
 	inventory_tab_button.pressed.connect(_show_inventory_tab)
 	PlayerState.changed.connect(_refresh_gear)
 	_apply_open_state()
+
+
+func _make_tab_style(fill: Color) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = fill
+	style.set_border_width_all(3)
+	style.border_color = Color(0, 0, 0, 1)
+	return style
+
+
+func _add_icon(button: Button) -> void:
+	var icon := TextureRect.new()
+	icon.name = "Icon"
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	button.add_child(icon)
+	icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	icon.offset_left = 8
+	icon.offset_top = 6
+	icon.offset_right = -8
+	icon.offset_bottom = -16
+	icon.hide()
 
 
 func _bind_slot(button: Button, slot: ItemData.Slot, caption: String) -> void:
@@ -134,6 +166,21 @@ func _apply_tab() -> void:
 		return
 	character_page.visible = character_tab
 	inventory_page.visible = not character_tab
+	_paint_tab(character_tab_button, character_tab)
+	_paint_tab(inventory_tab_button, not character_tab)
+
+
+func _paint_tab(button: Button, active: bool) -> void:
+	var style := _tab_on if active else _tab_idle
+	if style == null:
+		return
+	for state in ["normal", "hover", "pressed", "focus", "disabled"]:
+		button.add_theme_stylebox_override(state, style)
+	var font := Color(1, 1, 1, 1) if active else Color(0, 0, 0, 1)
+	button.add_theme_color_override("font_color", font)
+	button.add_theme_color_override("font_hover_color", font)
+	button.add_theme_color_override("font_pressed_color", font)
+	button.add_theme_color_override("font_focus_color", font)
 
 
 func _refresh_gear() -> void:
@@ -145,16 +192,29 @@ func _refresh_gear() -> void:
 	for index in _slot_buttons.size():
 		var item := PlayerState.item_in_slot(_slot_kinds[index])
 		var caption := _slot_buttons[index].get_node("Caption") as Label
-		if item == null:
-			caption.text = _slot_captions[index]
-		else:
-			caption.text = item.display_name
+		caption.text = _slot_captions[index]
+		_show_item_icon(_slot_buttons[index], item)
 	for index in _bag_buttons.size():
 		var caption := _bag_buttons[index].get_node("Caption") as Label
+		caption.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+		var item: ItemData = null
 		if index < PlayerState.inventory.size():
-			caption.text = PlayerState.inventory[index].display_name
+			item = PlayerState.inventory[index]
+			caption.text = item.display_name
 		else:
 			caption.text = ""
+		_show_item_icon(_bag_buttons[index], item)
+
+
+func _show_item_icon(button: Button, item: ItemData) -> void:
+	var icon := button.get_node_or_null("Icon") as TextureRect
+	if icon == null:
+		return
+	if item != null and item.icon != null:
+		icon.texture = item.icon
+		icon.show()
+	else:
+		icon.hide()
 
 
 func _refresh_enemies() -> void:

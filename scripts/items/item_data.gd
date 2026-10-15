@@ -4,6 +4,7 @@ class_name ItemData
 enum Slot { WEAPON, ARMOR, ACCESSORY, HELMET, BOOTS, OFFHAND }
 
 @export var display_name: String = ""
+@export var icon: Texture2D
 @export var slot: Slot = Slot.WEAPON
 @export var health_bonus: int = 0
 @export var melee_bonus: int = 0
