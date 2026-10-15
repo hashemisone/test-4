@@ -1,0 +1,61 @@
+[gd_scene format=3 uid="uid://f2h5j8l1n4q7t"]
+
+[ext_resource type="Texture2D" path="res://art/background/dungeon.png" id="1_bg"]
+[ext_resource type="TileSet" path="res://resources/tiles/dungeon_tileset.tres" id="2_tiles"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_floor"]
+size = Vector2(640, 40)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_step"]
+size = Vector2(200, 80)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wall"]
+size = Vector2(16, 400)
+
+[node name="TestRoom" type="Node2D"]
+
+[node name="Background" type="Sprite2D" parent="."]
+texture_filter = 1
+position = Vector2(320, 180)
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("1_bg")
+
+[node name="Ground" type="TileMapLayer" parent="."]
+texture_filter = 1
+tile_map_data = PackedByteArray("AAAAAAgAAAAAAAAAAAABAAgAAAAAAAAAAAACAAgAAAAAAAAAAAADAAgAAAAAAAAAAAAEAAgAAAAAAAAAAAAFAAgAAAAAAAAAAAAGAAgAAAAAAAAAAAAHAAgAAAAAAAAAAAAIAAgAAAAAAAAAAAAJAAgAAAAAAAAAAAAKAAgAAAAAAAAAAAALAAgAAAAAAAAAAAAMAAgAAAAAAAAAAAANAAgAAAAAAAAAAAAOAAgAAAAAAAAAAAAPAAgAAAAAAAAAAAALAAcAAAABAAAAAAALAAYAAAAAAAAAAAAMAAcAAAABAAAAAAAMAAYAAAAAAAAAAAANAAcAAAABAAAAAAANAAYAAAAAAAAAAAAOAAcAAAABAAAAAAAOAAYAAAAAAAAAAAAPAAcAAAABAAAAAAAPAAYAAAAAAAAAAAA=")
+tile_set = ExtResource("2_tiles")
+
+[node name="Floor" type="StaticBody2D" parent="."]
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Floor"]
+position = Vector2(320, 340)
+shape = SubResource("RectangleShape2D_floor")
+
+[node name="Step" type="StaticBody2D" parent="."]
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Step"]
+position = Vector2(540, 280)
+shape = SubResource("RectangleShape2D_step")
+
+[node name="LeftWall" type="StaticBody2D" parent="."]
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="LeftWall"]
+position = Vector2(-8, 180)
+shape = SubResource("RectangleShape2D_wall")
+
+[node name="RightWall" type="StaticBody2D" parent="."]
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="RightWall"]
+position = Vector2(648, 180)
+shape = SubResource("RectangleShape2D_wall")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(320, 180)

@@ -1,0 +1,20 @@
+[gd_scene format=3 uid="uid://b7n4q1v8m2k5d"]
+
+[ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
+[ext_resource type="PackedScene" path="res://scenes/level/test_room.tscn" id="2_room"]
+[ext_resource type="PackedScene" path="res://scenes/enemy/dummy.tscn" id="3_dummy"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="4_player"]
+[ext_resource type="PackedScene" path="res://scenes/hud/hud.tscn" id="5_hud"]
+
+[node name="Main" type="Node2D"]
+script = ExtResource("1_main")
+
+[node name="TestRoom" parent="." instance=ExtResource("2_room")]
+
+[node name="Dummy" parent="." instance=ExtResource("3_dummy")]
+position = Vector2(280, 320)
+
+[node name="Player" parent="." instance=ExtResource("4_player")]
+position = Vector2(96, 320)
+
+[node name="HUD" parent="." instance=ExtResource("5_hud")]

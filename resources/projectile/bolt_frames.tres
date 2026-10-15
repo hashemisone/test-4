@@ -1,0 +1,18 @@
+[gd_resource type="SpriteFrames" format=3]
+
+[ext_resource type="Texture2D" path="res://art/projectile/bolt_0.png" id="1_bolt0"]
+[ext_resource type="Texture2D" path="res://art/projectile/bolt_1.png" id="2_bolt1"]
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_bolt0")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_bolt1")
+}],
+"loop": true,
+"name": &"fly",
+"speed": 10.0
+}]

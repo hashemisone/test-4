@@ -1,0 +1,34 @@
+[gd_scene format=3 uid="uid://g8k1n4q7t0w3z"]
+
+[ext_resource type="Script" path="res://scripts/hud/hud.gd" id="1_hud"]
+
+[node name="HUD" type="CanvasLayer"]
+script = ExtResource("1_hud")
+
+[node name="Panel" type="ColorRect" parent="."]
+offset_left = 8.0
+offset_top = 6.0
+offset_right = 430.0
+offset_bottom = 52.0
+mouse_filter = 2
+color = Color(0.05, 0.04, 0.04, 0.55)
+
+[node name="TargetLabel" type="Label" parent="."]
+offset_left = 16.0
+offset_top = 8.0
+offset_right = 420.0
+offset_bottom = 28.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.95, 0.91, 0.84, 1)
+theme_override_font_sizes/font_size = 16
+text = "Dummy 30/30"
+
+[node name="HintLabel" type="Label" parent="."]
+offset_left = 16.0
+offset_top = 28.0
+offset_right = 420.0
+offset_bottom = 48.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.78, 0.74, 0.66, 1)
+theme_override_font_sizes/font_size = 12
+text = "A/D move    Space jump    J melee    K bolt"

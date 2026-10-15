@@ -1,0 +1,41 @@
+[gd_scene format=3 uid="uid://c6x9z3l0p4r7t"]
+
+[ext_resource type="Script" path="res://scripts/player/player.gd" id="1_player"]
+[ext_resource type="SpriteFrames" path="res://resources/player/player_frames.tres" id="2_frames"]
+[ext_resource type="Resource" path="res://resources/stats/player_stats.tres" id="3_stats"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
+size = Vector2(32, 84)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_melee"]
+size = Vector2(70, 28)
+
+[node name="Player" type="CharacterBody2D" groups=["player"]]
+collision_layer = 2
+collision_mask = 5
+script = ExtResource("1_player")
+stats = ExtResource("3_stats")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+texture_filter = 1
+position = Vector2(0, -55.8)
+sprite_frames = ExtResource("2_frames")
+animation = &"idle"
+autoplay = "idle"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -42)
+shape = SubResource("RectangleShape2D_body")
+
+[node name="MeleeHitbox" type="Area2D" parent="."]
+collision_layer = 8
+collision_mask = 4
+monitoring = false
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="MeleeHitbox"]
+position = Vector2(58, -52)
+shape = SubResource("RectangleShape2D_melee")
+
+[node name="BoltSpawn" type="Marker2D" parent="."]
+position = Vector2(40, -58)
