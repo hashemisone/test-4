@@ -2,6 +2,30 @@
 
 [ext_resource type="Script" path="res://scripts/hud/hud.gd" id="1_hud"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_frame"]
+bg_color = Color(1, 1, 1, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0, 0, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_slot"]
+bg_color = Color(1, 1, 1, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0, 0, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hover"]
+bg_color = Color(0.93, 0.93, 0.93, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0, 0, 0, 1)
+
 [node name="HUD" type="CanvasLayer"]
 process_mode = 3
 script = ExtResource("1_hud")
@@ -9,7 +33,7 @@ script = ExtResource("1_hud")
 [node name="HintLabel" type="Label" parent="."]
 offset_left = 16.0
 offset_top = 8.0
-offset_right = 500.0
+offset_right = 240.0
 offset_bottom = 26.0
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.95, 0.91, 0.84, 1)
@@ -46,127 +70,568 @@ grow_vertical = 2
 mouse_filter = 0
 color = Color(0, 0, 0, 0.55)
 
-[node name="GearPanel" type="ColorRect" parent="."]
+[node name="CharacterTab" type="Button" parent="."]
 visible = false
-offset_left = 90.0
-offset_top = 36.0
-offset_right = 550.0
-offset_bottom = 328.0
-mouse_filter = 0
-color = Color(0.09, 0.08, 0.08, 0.94)
-
-[node name="CharacterTab" type="Button" parent="GearPanel"]
-offset_left = 16.0
-offset_top = 12.0
-offset_right = 156.0
-offset_bottom = 40.0
+offset_left = 250.0
+offset_top = 8.0
+offset_right = 360.0
+offset_bottom = 36.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 14
+theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
+theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/normal = SubResource("StyleBoxFlat_slot")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_slot")
 text = "Character"
 
-[node name="InventoryTab" type="Button" parent="GearPanel"]
-offset_left = 168.0
-offset_top = 12.0
-offset_right = 308.0
-offset_bottom = 40.0
+[node name="InventoryTab" type="Button" parent="."]
+visible = false
+offset_left = 368.0
+offset_top = 8.0
+offset_right = 478.0
+offset_bottom = 36.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 14
+theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
+theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/normal = SubResource("StyleBoxFlat_slot")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_slot")
 text = "Inventory"
 
+[node name="GearPanel" type="Panel" parent="."]
+visible = false
+offset_left = 100.0
+offset_top = 44.0
+offset_right = 540.0
+offset_bottom = 344.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_frame")
+
 [node name="CharacterPage" type="Control" parent="GearPanel"]
+layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = 48.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="WeaponButton" type="Button" parent="GearPanel/CharacterPage"]
-offset_left = 16.0
-offset_top = 8.0
-offset_right = 360.0
-offset_bottom = 40.0
-theme_override_font_sizes/font_size = 14
-text = "Weapon: Empty"
+[node name="HelmetButton" type="Button" parent="GearPanel/CharacterPage"]
+layout_mode = 0
+offset_left = 22.0
+offset_top = 18.0
+offset_right = 100.0
+offset_bottom = 96.0
+theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
+theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/normal = SubResource("StyleBoxFlat_slot")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_slot")
+
+[node name="Caption" type="Label" parent="GearPanel/CharacterPage/HelmetButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = -4.0
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 12
+text = "helmet"
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="SwordButton" type="Button" parent="GearPanel/CharacterPage"]
+layout_mode = 0
+offset_left = 22.0
+offset_top = 108.0
+offset_right = 100.0
+offset_bottom = 208.0
+theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
+theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/normal = SubResource("StyleBoxFlat_slot")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_slot")
+
+[node name="Caption" type="Label" parent="GearPanel/CharacterPage/SwordButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = -4.0
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 12
+text = "sword"
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="BootsButton" type="Button" parent="GearPanel/CharacterPage"]
+layout_mode = 0
+offset_left = 22.0
+offset_top = 220.0
+offset_right = 100.0
+offset_bottom = 286.0
+theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
+theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/normal = SubResource("StyleBoxFlat_slot")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_slot")
+
+[node name="Caption" type="Label" parent="GearPanel/CharacterPage/BootsButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = -4.0
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 12
+text = "boots"
+horizontal_alignment = 1
+vertical_alignment = 2
 
 [node name="ArmorButton" type="Button" parent="GearPanel/CharacterPage"]
-offset_left = 16.0
-offset_top = 48.0
-offset_right = 360.0
-offset_bottom = 80.0
-theme_override_font_sizes/font_size = 14
-text = "Armor: Empty"
+layout_mode = 0
+offset_left = 330.0
+offset_top = 18.0
+offset_right = 418.0
+offset_bottom = 96.0
+theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
+theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/normal = SubResource("StyleBoxFlat_slot")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_slot")
 
-[node name="AccessoryButton" type="Button" parent="GearPanel/CharacterPage"]
-offset_left = 16.0
-offset_top = 88.0
-offset_right = 360.0
-offset_bottom = 120.0
-theme_override_font_sizes/font_size = 14
-text = "Accessory: Empty"
+[node name="Caption" type="Label" parent="GearPanel/CharacterPage/ArmorButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = -4.0
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 12
+text = "armor"
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="OffhandButton" type="Button" parent="GearPanel/CharacterPage"]
+layout_mode = 0
+offset_left = 330.0
+offset_top = 108.0
+offset_right = 418.0
+offset_bottom = 208.0
+theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
+theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/normal = SubResource("StyleBoxFlat_slot")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_slot")
+
+[node name="Caption" type="Label" parent="GearPanel/CharacterPage/OffhandButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = -4.0
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 12
+text = "sword/shield"
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="TrinketButton" type="Button" parent="GearPanel/CharacterPage"]
+layout_mode = 0
+offset_left = 330.0
+offset_top = 220.0
+offset_right = 408.0
+offset_bottom = 286.0
+theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
+theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/normal = SubResource("StyleBoxFlat_slot")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_slot")
+
+[node name="Caption" type="Label" parent="GearPanel/CharacterPage/TrinketButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = -4.0
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 12
+text = "trinket"
+horizontal_alignment = 1
+vertical_alignment = 2
 
 [node name="HealthLabel" type="Label" parent="GearPanel/CharacterPage"]
-offset_left = 16.0
-offset_top = 136.0
-offset_right = 360.0
-offset_bottom = 160.0
+layout_mode = 0
+offset_left = 120.0
+offset_top = 118.0
+offset_right = 310.0
+offset_bottom = 140.0
 mouse_filter = 2
-theme_override_colors/font_color = Color(0.95, 0.91, 0.84, 1)
-theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 14
 text = "Health 100/100"
+horizontal_alignment = 1
 
 [node name="MeleeLabel" type="Label" parent="GearPanel/CharacterPage"]
-offset_left = 16.0
-offset_top = 164.0
-offset_right = 360.0
-offset_bottom = 188.0
+layout_mode = 0
+offset_left = 120.0
+offset_top = 144.0
+offset_right = 310.0
+offset_bottom = 166.0
 mouse_filter = 2
-theme_override_colors/font_color = Color(0.95, 0.91, 0.84, 1)
-theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 14
 text = "Melee 10"
+horizontal_alignment = 1
 
 [node name="BoltLabel" type="Label" parent="GearPanel/CharacterPage"]
-offset_left = 16.0
-offset_top = 192.0
-offset_right = 360.0
-offset_bottom = 216.0
+layout_mode = 0
+offset_left = 120.0
+offset_top = 170.0
+offset_right = 310.0
+offset_bottom = 192.0
 mouse_filter = 2
-theme_override_colors/font_color = Color(0.95, 0.91, 0.84, 1)
-theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 14
 text = "Bolt 8"
+horizontal_alignment = 1
 
 [node name="InventoryPage" type="Control" parent="GearPanel"]
 visible = false
+layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = 48.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="ItemButton0" type="Button" parent="GearPanel/InventoryPage"]
-offset_left = 16.0
-offset_top = 8.0
-offset_right = 360.0
-offset_bottom = 40.0
-theme_override_font_sizes/font_size = 14
-text = "Sword"
+[node name="Slot0" type="Button" parent="GearPanel/InventoryPage"]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 16.0
+offset_right = 96.0
+offset_bottom = 72.0
+theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
+theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/normal = SubResource("StyleBoxFlat_slot")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_slot")
 
-[node name="ItemButton1" type="Button" parent="GearPanel/InventoryPage"]
-offset_left = 16.0
-offset_top = 48.0
-offset_right = 360.0
-offset_bottom = 80.0
-theme_override_font_sizes/font_size = 14
-text = "Armor"
+[node name="Caption" type="Label" parent="GearPanel/InventoryPage/Slot0"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 2.0
+offset_top = 2.0
+offset_right = -2.0
+offset_bottom = -2.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 11
+horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="ItemButton2" type="Button" parent="GearPanel/InventoryPage"]
-offset_left = 16.0
-offset_top = 88.0
+[node name="Slot1" type="Button" parent="GearPanel/InventoryPage"]
+layout_mode = 0
+offset_left = 112.0
+offset_top = 16.0
+offset_right = 184.0
+offset_bottom = 72.0
+theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
+theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/normal = SubResource("StyleBoxFlat_slot")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_slot")
+
+[node name="Caption" type="Label" parent="GearPanel/InventoryPage/Slot1"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 2.0
+offset_top = 2.0
+offset_right = -2.0
+offset_bottom = -2.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 11
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Slot2" type="Button" parent="GearPanel/InventoryPage"]
+layout_mode = 0
+offset_left = 200.0
+offset_top = 16.0
+offset_right = 272.0
+offset_bottom = 72.0
+theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
+theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/normal = SubResource("StyleBoxFlat_slot")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_slot")
+
+[node name="Caption" type="Label" parent="GearPanel/InventoryPage/Slot2"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 2.0
+offset_top = 2.0
+offset_right = -2.0
+offset_bottom = -2.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 11
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Slot3" type="Button" parent="GearPanel/InventoryPage"]
+layout_mode = 0
+offset_left = 288.0
+offset_top = 16.0
 offset_right = 360.0
-offset_bottom = 120.0
-theme_override_font_sizes/font_size = 14
-text = "Charm"
+offset_bottom = 72.0
+theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
+theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/normal = SubResource("StyleBoxFlat_slot")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_slot")
+
+[node name="Caption" type="Label" parent="GearPanel/InventoryPage/Slot3"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 2.0
+offset_top = 2.0
+offset_right = -2.0
+offset_bottom = -2.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 11
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Slot4" type="Button" parent="GearPanel/InventoryPage"]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 92.0
+offset_right = 102.0
+offset_bottom = 170.0
+theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
+theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/normal = SubResource("StyleBoxFlat_slot")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_slot")
+
+[node name="Caption" type="Label" parent="GearPanel/InventoryPage/Slot4"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 2.0
+offset_top = 2.0
+offset_right = -2.0
+offset_bottom = -2.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 11
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Slot5" type="Button" parent="GearPanel/InventoryPage"]
+layout_mode = 0
+offset_left = 150.0
+offset_top = 86.0
+offset_right = 260.0
+offset_bottom = 196.0
+theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
+theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/normal = SubResource("StyleBoxFlat_slot")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_slot")
+
+[node name="Caption" type="Label" parent="GearPanel/InventoryPage/Slot5"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 2.0
+offset_top = 2.0
+offset_right = -2.0
+offset_bottom = -2.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 12
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Slot6" type="Button" parent="GearPanel/InventoryPage"]
+layout_mode = 0
+offset_left = 288.0
+offset_top = 92.0
+offset_right = 366.0
+offset_bottom = 170.0
+theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
+theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/normal = SubResource("StyleBoxFlat_slot")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_slot")
+
+[node name="Caption" type="Label" parent="GearPanel/InventoryPage/Slot6"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 2.0
+offset_top = 2.0
+offset_right = -2.0
+offset_bottom = -2.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 11
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Slot7" type="Button" parent="GearPanel/InventoryPage"]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 214.0
+offset_right = 110.0
+offset_bottom = 286.0
+theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
+theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/normal = SubResource("StyleBoxFlat_slot")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_slot")
+
+[node name="Caption" type="Label" parent="GearPanel/InventoryPage/Slot7"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 2.0
+offset_top = 2.0
+offset_right = -2.0
+offset_bottom = -2.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 11
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Slot8" type="Button" parent="GearPanel/InventoryPage"]
+layout_mode = 0
+offset_left = 150.0
+offset_top = 214.0
+offset_right = 236.0
+offset_bottom = 286.0
+theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
+theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/normal = SubResource("StyleBoxFlat_slot")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_slot")
+
+[node name="Caption" type="Label" parent="GearPanel/InventoryPage/Slot8"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 2.0
+offset_top = 2.0
+offset_right = -2.0
+offset_bottom = -2.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 11
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Slot9" type="Button" parent="GearPanel/InventoryPage"]
+layout_mode = 0
+offset_left = 288.0
+offset_top = 214.0
+offset_right = 366.0
+offset_bottom = 286.0
+theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
+theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/normal = SubResource("StyleBoxFlat_slot")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_slot")
+
+[node name="Caption" type="Label" parent="GearPanel/InventoryPage/Slot9"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 2.0
+offset_top = 2.0
+offset_right = -2.0
+offset_bottom = -2.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 11
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="GearButton" type="Button" parent="."]
 offset_left = 548.0

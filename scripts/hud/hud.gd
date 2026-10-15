@@ -10,38 +10,49 @@ var show_shooter_row := true
 
 @onready var hint_label: Label = $HintLabel
 @onready var gear_button: Button = $GearButton
+@onready var character_tab_button: Button = $CharacterTab
+@onready var inventory_tab_button: Button = $InventoryTab
 @onready var dimmer: ColorRect = $Dimmer
-@onready var gear_panel: ColorRect = $GearPanel
+@onready var gear_panel: Panel = $GearPanel
 @onready var character_page: Control = $GearPanel/CharacterPage
 @onready var inventory_page: Control = $GearPanel/InventoryPage
 @onready var health_label: Label = $GearPanel/CharacterPage/HealthLabel
 @onready var melee_label: Label = $GearPanel/CharacterPage/MeleeLabel
 @onready var bolt_label: Label = $GearPanel/CharacterPage/BoltLabel
-@onready var weapon_button: Button = $GearPanel/CharacterPage/WeaponButton
-@onready var armor_button: Button = $GearPanel/CharacterPage/ArmorButton
-@onready var accessory_button: Button = $GearPanel/CharacterPage/AccessoryButton
-@onready var item_buttons: Array[Button] = [
-	$GearPanel/InventoryPage/ItemButton0,
-	$GearPanel/InventoryPage/ItemButton1,
-	$GearPanel/InventoryPage/ItemButton2,
-]
 @onready var goblin_label: Label = $GoblinLabel
 @onready var shooter_label: Label = $ShooterLabel
+
+var _slot_buttons: Array[Button] = []
+var _slot_kinds: Array[ItemData.Slot] = []
+var _slot_captions: Array[String] = []
+var _bag_buttons: Array[Button] = []
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	get_tree().paused = false
+	_bind_slot($GearPanel/CharacterPage/HelmetButton, ItemData.Slot.HELMET, "helmet")
+	_bind_slot($GearPanel/CharacterPage/SwordButton, ItemData.Slot.WEAPON, "sword")
+	_bind_slot($GearPanel/CharacterPage/BootsButton, ItemData.Slot.BOOTS, "boots")
+	_bind_slot($GearPanel/CharacterPage/ArmorButton, ItemData.Slot.ARMOR, "armor")
+	_bind_slot($GearPanel/CharacterPage/OffhandButton, ItemData.Slot.OFFHAND, "sword/shield")
+	_bind_slot($GearPanel/CharacterPage/TrinketButton, ItemData.Slot.ACCESSORY, "trinket")
+	for index in 10:
+		var slot_button := get_node("GearPanel/InventoryPage/Slot%d" % index) as Button
+		_bag_buttons.append(slot_button)
+		slot_button.pressed.connect(_equip_from_bag.bind(index))
 	gear_button.pressed.connect(toggle_gear)
-	$GearPanel/CharacterTab.pressed.connect(_show_character_tab)
-	$GearPanel/InventoryTab.pressed.connect(_show_inventory_tab)
-	weapon_button.pressed.connect(_unequip_weapon)
-	armor_button.pressed.connect(_unequip_armor)
-	accessory_button.pressed.connect(_unequip_accessory)
-	for index in item_buttons.size():
-		item_buttons[index].pressed.connect(_equip_from_bag.bind(index))
+	character_tab_button.pressed.connect(_show_character_tab)
+	inventory_tab_button.pressed.connect(_show_inventory_tab)
 	PlayerState.changed.connect(_refresh_gear)
 	_apply_open_state()
+
+
+func _bind_slot(button: Button, slot: ItemData.Slot, caption: String) -> void:
+	_slot_buttons.append(button)
+	_slot_kinds.append(slot)
+	_slot_captions.append(caption)
+	button.pressed.connect(_unequip_slot.bind(slot))
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -96,16 +107,8 @@ func _show_inventory_tab() -> void:
 	_apply_tab()
 
 
-func _unequip_weapon() -> void:
-	PlayerState.unequip(ItemData.Slot.WEAPON)
-
-
-func _unequip_armor() -> void:
-	PlayerState.unequip(ItemData.Slot.ARMOR)
-
-
-func _unequip_accessory() -> void:
-	PlayerState.unequip(ItemData.Slot.ACCESSORY)
+func _unequip_slot(slot: ItemData.Slot) -> void:
+	PlayerState.unequip(slot)
 
 
 func _equip_from_bag(index: int) -> void:
@@ -117,6 +120,8 @@ func _equip_from_bag(index: int) -> void:
 func _apply_open_state() -> void:
 	dimmer.visible = gear_open
 	gear_panel.visible = gear_open
+	character_tab_button.visible = gear_open
+	inventory_tab_button.visible = gear_open
 	gear_button.text = "Close" if gear_open else "Gear"
 	get_tree().paused = gear_open
 	_apply_tab()
@@ -137,34 +142,19 @@ func _refresh_gear() -> void:
 	health_label.text = "Health %d/%d" % [PlayerState.current_health, PlayerState.max_health()]
 	melee_label.text = "Melee %d" % PlayerState.melee_damage()
 	bolt_label.text = "Bolt %d" % PlayerState.bolt_damage()
-	_set_slot_button(weapon_button, ItemData.Slot.WEAPON)
-	_set_slot_button(armor_button, ItemData.Slot.ARMOR)
-	_set_slot_button(accessory_button, ItemData.Slot.ACCESSORY)
-	for index in item_buttons.size():
-		var button := item_buttons[index]
-		if index < PlayerState.inventory.size():
-			button.visible = true
-			button.disabled = false
-			button.text = PlayerState.inventory[index].summary()
+	for index in _slot_buttons.size():
+		var item := PlayerState.item_in_slot(_slot_kinds[index])
+		var caption := _slot_buttons[index].get_node("Caption") as Label
+		if item == null:
+			caption.text = _slot_captions[index]
 		else:
-			button.visible = false
-			button.disabled = true
-
-
-func _set_slot_button(button: Button, slot: ItemData.Slot) -> void:
-	var item := PlayerState.item_in_slot(slot)
-	var title := "Slot"
-	match slot:
-		ItemData.Slot.WEAPON:
-			title = "Weapon"
-		ItemData.Slot.ARMOR:
-			title = "Armor"
-		_:
-			title = "Accessory"
-	if item == null:
-		button.text = "%s: Empty" % title
-	else:
-		button.text = "%s: %s" % [title, item.display_name]
+			caption.text = item.display_name
+	for index in _bag_buttons.size():
+		var caption := _bag_buttons[index].get_node("Caption") as Label
+		if index < PlayerState.inventory.size():
+			caption.text = PlayerState.inventory[index].display_name
+		else:
+			caption.text = ""
 
 
 func _refresh_enemies() -> void:

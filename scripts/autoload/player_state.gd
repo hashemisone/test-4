@@ -11,6 +11,9 @@ var inventory: Array[ItemData] = []
 var weapon: ItemData
 var armor: ItemData
 var accessory: ItemData
+var helmet: ItemData
+var boots: ItemData
+var offhand: ItemData
 var current_health := 100
 
 
@@ -66,8 +69,14 @@ func item_in_slot(slot: ItemData.Slot) -> ItemData:
 			return weapon
 		ItemData.Slot.ARMOR:
 			return armor
-		_:
+		ItemData.Slot.ACCESSORY:
 			return accessory
+		ItemData.Slot.HELMET:
+			return helmet
+		ItemData.Slot.BOOTS:
+			return boots
+		_:
+			return offhand
 
 
 func _set_slot(slot: ItemData.Slot, item: ItemData) -> void:
@@ -76,13 +85,19 @@ func _set_slot(slot: ItemData.Slot, item: ItemData) -> void:
 			weapon = item
 		ItemData.Slot.ARMOR:
 			armor = item
-		_:
+		ItemData.Slot.ACCESSORY:
 			accessory = item
+		ItemData.Slot.HELMET:
+			helmet = item
+		ItemData.Slot.BOOTS:
+			boots = item
+		_:
+			offhand = item
 
 
 func _bonus(property: String) -> int:
 	var total := 0
-	for item in [weapon, armor, accessory]:
+	for item in [weapon, armor, accessory, helmet, boots, offhand]:
 		if item != null:
 			total += int(item.get(property))
 	return total
