@@ -26,6 +26,5 @@ func _on_body_entered(body: Node) -> void:
 		get_tree().paused = false
 		get_tree().call_deferred("change_scene_to_packed", next_scene)
 		return
-	var hud := get_parent().get_node_or_null("HUD")
-	if hud != null and hud.has_method("show_status"):
-		hud.show_status("Run clear.")
+	get_tree().paused = false
+	get_tree().call_deferred("change_scene_to_file", "res://scenes/menu.tscn")

@@ -18,8 +18,19 @@ var current_health := 100
 
 
 func _ready() -> void:
+	start_run()
+
+
+func start_run() -> void:
+	weapon = null
+	armor = null
+	accessory = null
+	helmet = null
+	boots = null
+	offhand = null
 	inventory = [SWORD, ARMOR, CHARM]
 	current_health = max_health()
+	changed.emit()
 
 
 func max_health() -> int:
