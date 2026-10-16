@@ -452,8 +452,6 @@ func _hand_tip(item: ItemData, slot: ItemData.Slot) -> String:
 		return text
 	if equipped == null and slot == ItemData.Slot.OFFHAND and PlayerState.weapon == item:
 		return text
-	if equipped == null and slot != ItemData.Slot.OFFHAND:
-		return text
 	var worn := PlayerState.weapon == item or PlayerState.offhand == item
 	var delta := _delta_line(item, equipped, worn and equipped != null, equipped == null)
 	if delta != "":
@@ -465,11 +463,12 @@ func _tip_text(item: ItemData) -> String:
 	var text := "%s\n%s" % [item.display_name, item.bonus_text()]
 	var equipped := PlayerState.item_in_slot(item.slot)
 	var removed := _offhand_removed_by(item)
-	if item.slot == ItemData.Slot.OFFHAND and equipped == null:
-		var gain := _delta_line(item, null, false, true)
+	if equipped == null:
+		var gain := _delta_line(item, null, false, true, removed)
 		if gain != "":
 			text += "\n" + gain
-	elif equipped != null and equipped != item:
+		return text
+	if equipped != null and equipped != item:
 		var delta := _delta_line(item, equipped, false, false, removed)
 		if delta != "":
 			text += "\n" + delta
