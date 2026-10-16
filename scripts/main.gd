@@ -26,6 +26,18 @@ func _ready() -> void:
 	hud.show_shooter(shooter.health, shooter.max_health)
 
 
+func track_enemy(enemy: Node, kind: String) -> void:
+	enemy.died.connect(_on_enemy_died)
+	if kind == "shooter":
+		enemy.health_changed.connect($HUD.show_shooter)
+		$HUD.show_shooter(enemy.health, enemy.max_health)
+	else:
+		enemy.health_changed.connect($HUD.show_target)
+		$HUD.show_target(enemy.health, enemy.max_health)
+	if has_node("Exit"):
+		$Exit.close()
+
+
 func _on_enemy_died() -> void:
 	var remaining := 0
 	for node in get_tree().get_nodes_in_group("enemy"):

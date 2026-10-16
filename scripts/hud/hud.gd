@@ -2,7 +2,7 @@ extends CanvasLayer
 
 const HOVER_DELAY := 0.4
 
-enum PauseView { CLOSED, MENU, SHEET }
+enum PauseView { CLOSED, MENU, SHEET, CHEAT }
 
 var pause_view := PauseView.CLOSED
 var _hover_button: Button
@@ -72,6 +72,8 @@ func _ready() -> void:
 	$PauseMenu/Character.pressed.connect(_open_character)
 	$PauseMenu/Inventory.pressed.connect(_open_inventory)
 	$PauseMenu/Quit.pressed.connect(_quit_run)
+	ButtonStyle.apply($PauseMenu/Cheat)
+	$PauseMenu/Cheat.pressed.connect(_open_cheat)
 	PlayerState.changed.connect(_refresh_gear)
 	_add_icon($Potion1)
 	_add_icon($Potion2)
@@ -131,6 +133,7 @@ func show_target(current: int, maximum: int) -> void:
 
 
 func show_shooter(current: int, maximum: int) -> void:
+	show_shooter_row = true
 	shooter_health = current
 	shooter_max_health = maximum
 	_refresh_enemies()
@@ -179,6 +182,11 @@ func _back_to_menu() -> void:
 	_apply_open_state()
 
 
+func _open_cheat() -> void:
+	pause_view = PauseView.CHEAT
+	_apply_open_state()
+
+
 func _quit_run() -> void:
 	get_tree().paused = false
 	get_tree().change_scene_to_file("res://scenes/menu.tscn")
@@ -212,7 +220,8 @@ func _apply_open_state() -> void:
 	dimmer.visible = open
 	$PauseMenu.visible = pause_view == PauseView.MENU
 	gear_panel.visible = pause_view == PauseView.SHEET
-	$BackButton.visible = pause_view == PauseView.SHEET
+	$CheatPage.visible = pause_view == PauseView.CHEAT
+	$BackButton.visible = pause_view == PauseView.SHEET or pause_view == PauseView.CHEAT
 	character_tab_button.visible = false
 	inventory_tab_button.visible = false
 	gear_button.text = "Close" if open else "Menu"

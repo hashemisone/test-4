@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://g8k1n4q7t0w3z"]
 
 [ext_resource type="Script" path="res://scripts/hud/hud.gd" id="1_hud"]
+[ext_resource type="Script" path="res://scripts/ui/cheat_menu.gd" id="2_cheat"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_frame"]
 bg_color = Color(1, 1, 1, 1)
@@ -1012,6 +1013,82 @@ theme_override_colors/default_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/normal_font_size = 13
 text = "Shield"
 
+[node name="CheatPage" type="Panel" parent="."]
+visible = false
+offset_left = 16.0
+offset_top = 42.0
+offset_right = 624.0
+offset_bottom = 354.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_frame")
+script = ExtResource("2_cheat")
+
+[node name="Level1" type="Button" parent="CheatPage"]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 12.0
+offset_right = 76.0
+offset_bottom = 44.0
+theme_override_font_sizes/font_size = 14
+text = "Lv 1"
+
+[node name="Level3" type="Button" parent="CheatPage"]
+layout_mode = 0
+offset_left = 84.0
+offset_top = 12.0
+offset_right = 144.0
+offset_bottom = 44.0
+theme_override_font_sizes/font_size = 14
+text = "Lv 3"
+
+[node name="Level5" type="Button" parent="CheatPage"]
+layout_mode = 0
+offset_left = 152.0
+offset_top = 12.0
+offset_right = 212.0
+offset_bottom = 44.0
+theme_override_font_sizes/font_size = 14
+text = "Lv 5"
+
+[node name="Goblin" type="Button" parent="CheatPage"]
+layout_mode = 0
+offset_left = 236.0
+offset_top = 12.0
+offset_right = 356.0
+offset_bottom = 44.0
+theme_override_font_sizes/font_size = 14
+text = "Goblin"
+
+[node name="Shooter" type="Button" parent="CheatPage"]
+layout_mode = 0
+offset_left = 364.0
+offset_top = 12.0
+offset_right = 484.0
+offset_bottom = 44.0
+theme_override_font_sizes/font_size = 14
+text = "Shooter"
+
+[node name="AddEach" type="Button" parent="CheatPage"]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 56.0
+offset_right = 220.0
+offset_bottom = 92.0
+theme_override_font_sizes/font_size = 14
+text = "Add one of each"
+
+[node name="Scroll" type="ScrollContainer" parent="CheatPage"]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 104.0
+offset_right = 592.0
+offset_bottom = 300.0
+horizontal_scroll_mode = 0
+
+[node name="List" type="VBoxContainer" parent="CheatPage/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
 [node name="BackButton" type="Button" parent="."]
 visible = false
 offset_left = 16.0
@@ -1024,9 +1101,9 @@ text = "Back"
 [node name="PauseMenu" type="Panel" parent="."]
 visible = false
 offset_left = 204.0
-offset_top = 64.0
+offset_top = 40.0
 offset_right = 436.0
-offset_bottom = 296.0
+offset_bottom = 328.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_frame")
 
 [node name="Resume" type="Button" parent="PauseMenu"]
@@ -1064,6 +1141,15 @@ offset_right = 214.0
 offset_bottom = 214.0
 theme_override_font_sizes/font_size = 16
 text = "Quit"
+
+[node name="Cheat" type="Button" parent="PauseMenu"]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 226.0
+offset_right = 214.0
+offset_bottom = 266.0
+theme_override_font_sizes/font_size = 16
+text = "Cheat"
 
 [node name="GearButton" type="Button" parent="."]
 offset_left = 548.0

@@ -16,6 +16,13 @@ func open() -> void:
 	monitoring = true
 
 
+func close() -> void:
+	if _used:
+		return
+	visible = false
+	monitoring = false
+
+
 func _on_body_entered(body: Node) -> void:
 	if not visible or _used:
 		return
