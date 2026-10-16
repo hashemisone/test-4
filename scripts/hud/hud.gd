@@ -149,6 +149,10 @@ func _equip_from_bag(index: int) -> void:
 		return
 	var item := PlayerState.inventory[index]
 	if item.slot == ItemData.Slot.WEAPON and not item.two_handed:
+		if PlayerState.weapon == null:
+			_close_hand_choice()
+			PlayerState.equip_to(item, ItemData.Slot.WEAPON)
+			return
 		_open_hand_choice(item, _bag_buttons[index])
 		return
 	_close_hand_choice()
@@ -415,8 +419,10 @@ func _hand_tip(item: ItemData, slot: ItemData.Slot) -> String:
 	var title := "Main" if slot == ItemData.Slot.WEAPON else "Off-hand"
 	var text := "%s\n%s\n%s" % [title, item.display_name, item.bonus_text()]
 	var equipped := PlayerState.item_in_slot(slot)
-	var other: ItemData = null if equipped == null or equipped == item else equipped
-	var delta := _delta_line(item, other, true)
+	if equipped == null or equipped == item:
+		return text
+	var worn := PlayerState.weapon == item or PlayerState.offhand == item
+	var delta := _delta_line(item, equipped, true, worn)
 	if delta != "":
 		text += "\n" + delta
 	return text
@@ -425,9 +431,8 @@ func _hand_tip(item: ItemData, slot: ItemData.Slot) -> String:
 func _tip_text(item: ItemData) -> String:
 	var text := "%s\n%s" % [item.display_name, item.bonus_text()]
 	var equipped := PlayerState.item_in_slot(item.slot)
-	if equipped != null:
-		var other: ItemData = null if equipped == item else equipped
-		var delta := _delta_line(item, other)
+	if equipped != null and equipped != item:
+		var delta := _delta_line(item, equipped)
 		if delta != "":
 			text += "\n" + delta
 	var removed := _offhand_removed_by(item)
@@ -458,15 +463,17 @@ func _loss_line(removed: ItemData) -> String:
 	return "\n".join(parts)
 
 
-func _delta_line(item: ItemData, other: ItemData, line_break: bool = false) -> String:
+func _delta_line(item: ItemData, other: ItemData, line_break: bool = false, losses_only: bool = false) -> String:
+	if other == null:
+		return ""
 	var parts: PackedStringArray = []
 	var fields: Array[String] = ["health_bonus", "melee_bonus", "bolt_bonus"]
 	var names: Array[String] = ["Health", "Melee", "Bolt"]
 	for index in fields.size():
 		var now: int = int(item.get(fields[index]))
-		var was: int = int(other.get(fields[index])) if other != null else 0
+		var was: int = int(other.get(fields[index]))
 		var diff := now - was
-		if diff == 0:
+		if diff == 0 or (losses_only and diff > 0):
 			continue
 		var color := "#1b7f34" if diff > 0 else "#c0392b"
 		var sign := "+" if diff > 0 else ""
