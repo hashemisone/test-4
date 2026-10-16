@@ -1022,64 +1022,20 @@ offset_bottom = 354.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_frame")
 script = ExtResource("2_cheat")
 
-[node name="Level1" type="Button" parent="CheatPage"]
+[node name="Path" type="Label" parent="CheatPage"]
 layout_mode = 0
 offset_left = 16.0
-offset_top = 12.0
-offset_right = 76.0
-offset_bottom = 44.0
-theme_override_font_sizes/font_size = 14
-text = "Lv 1"
-
-[node name="Level3" type="Button" parent="CheatPage"]
-layout_mode = 0
-offset_left = 84.0
-offset_top = 12.0
-offset_right = 144.0
-offset_bottom = 44.0
-theme_override_font_sizes/font_size = 14
-text = "Lv 3"
-
-[node name="Level5" type="Button" parent="CheatPage"]
-layout_mode = 0
-offset_left = 152.0
-offset_top = 12.0
-offset_right = 212.0
-offset_bottom = 44.0
-theme_override_font_sizes/font_size = 14
-text = "Lv 5"
-
-[node name="Goblin" type="Button" parent="CheatPage"]
-layout_mode = 0
-offset_left = 236.0
-offset_top = 12.0
-offset_right = 356.0
-offset_bottom = 44.0
-theme_override_font_sizes/font_size = 14
-text = "Goblin"
-
-[node name="Shooter" type="Button" parent="CheatPage"]
-layout_mode = 0
-offset_left = 364.0
-offset_top = 12.0
-offset_right = 484.0
-offset_bottom = 44.0
-theme_override_font_sizes/font_size = 14
-text = "Shooter"
-
-[node name="AddEach" type="Button" parent="CheatPage"]
-layout_mode = 0
-offset_left = 16.0
-offset_top = 56.0
-offset_right = 220.0
-offset_bottom = 92.0
-theme_override_font_sizes/font_size = 14
-text = "Add one of each"
+offset_top = 10.0
+offset_right = 592.0
+offset_bottom = 34.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 16
+text = "Cheat"
 
 [node name="Scroll" type="ScrollContainer" parent="CheatPage"]
 layout_mode = 0
 offset_left = 16.0
-offset_top = 104.0
+offset_top = 42.0
 offset_right = 592.0
 offset_bottom = 300.0
 horizontal_scroll_mode = 0

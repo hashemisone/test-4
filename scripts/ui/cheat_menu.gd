@@ -4,86 +4,78 @@ const GOBLIN_SCENE := preload("res://scenes/enemy/dummy.tscn")
 const SHOOTER_SCENE := preload("res://scenes/enemy/shooter.tscn")
 
 var cheat_level := 1
+var _path: PackedStringArray = []
 
 
 func _ready() -> void:
-	for button in [$Level1, $Level3, $Level5, $Goblin, $Shooter, $AddEach]:
-		ButtonStyle.apply(button)
-	$Level1.pressed.connect(_set_level.bind(1))
-	$Level3.pressed.connect(_set_level.bind(3))
-	$Level5.pressed.connect(_set_level.bind(5))
-	$Goblin.pressed.connect(_spawn.bind(GOBLIN_SCENE, "goblin"))
-	$Shooter.pressed.connect(_spawn.bind(SHOOTER_SCENE, "shooter"))
-	$AddEach.pressed.connect(_add_one_of_each)
-	_paint_levels()
-	_build_list()
+	_show_folder()
 
 
-func _set_level(level: int) -> void:
-	cheat_level = level
-	_paint_levels()
-
-
-func _paint_levels() -> void:
-	_paint_level($Level1, 1)
-	_paint_level($Level3, 3)
-	_paint_level($Level5, 5)
-
-
-func _paint_level(button: Button, level: int) -> void:
-	if level == cheat_level:
-		ButtonStyle.apply_selected(button)
-	else:
-		ButtonStyle.apply(button)
-
-
-func _build_list() -> void:
+func _show_folder() -> void:
+	$Path.text = "Cheat" if _path.is_empty() else " / ".join(_path)
 	var box := $Scroll/List
-	var items := _catalog()
-	var bucket := -1
-	for item in items:
-		var next_bucket := _bucket(item)
-		if next_bucket != bucket:
-			bucket = next_bucket
-			box.add_child(_header(_bucket_name(bucket)))
-		box.add_child(_row(item))
+	for child in box.get_children():
+		box.remove_child(child)
+		child.free()
+	if not _path.is_empty():
+		box.add_child(_button("Up", _up))
+	if _path.is_empty():
+		box.add_child(_button("Enemy", _enter.bind("Enemy")))
+		box.add_child(_button("Equipment", _enter.bind("Equipment")))
+		box.add_child(_button("Potion", _enter.bind("Potion")))
+		return
+	if _path[0] == "Enemy":
+		_show_enemies(box)
+	elif _path[0] == "Equipment":
+		_show_equipment(box)
+	else:
+		_show_potions(box)
 
 
-func _catalog() -> Array[ItemData]:
+func _show_enemies(box: VBoxContainer) -> void:
+	box.add_child(_level_button(1))
+	box.add_child(_level_button(3))
+	box.add_child(_level_button(5))
+	box.add_child(_button("Goblin", _spawn.bind(GOBLIN_SCENE, "goblin")))
+	box.add_child(_button("Shooter", _spawn.bind(SHOOTER_SCENE, "shooter")))
+
+
+func _show_equipment(box: VBoxContainer) -> void:
+	if _path.size() == 1:
+		box.add_child(_button("Common", _enter.bind("Common")))
+		box.add_child(_button("Uncommon", _enter.bind("Uncommon")))
+		box.add_child(_button("Add one of each", _add_one_of_each))
+		return
+	var rarity := ItemData.Rarity.COMMON if _path[1] == "Common" else ItemData.Rarity.UNCOMMON
+	for item in _sorted_items(false, rarity):
+		box.add_child(_button(item.display_name, _give.bind(item)))
+
+
+func _show_potions(box: VBoxContainer) -> void:
+	for item in _sorted_items(true, ItemData.Rarity.COMMON):
+		box.add_child(_button(item.display_name, _give.bind(item)))
+
+
+func _sorted_items(potions: bool, rarity: ItemData.Rarity) -> Array[ItemData]:
 	var items: Array[ItemData] = []
 	for family in Loot.FAMILIES:
 		for path in family:
-			items.append(load(path))
+			var item := load(path) as ItemData
+			if item.is_potion() != potions:
+				continue
+			if not potions and item.rarity != rarity:
+				continue
+			items.append(item)
 	items.sort_custom(_before)
 	return items
 
 
 func _before(a: ItemData, b: ItemData) -> bool:
-	if _bucket(a) != _bucket(b):
-		return _bucket(a) < _bucket(b)
-	if a.two_handed != b.two_handed:
+	if a.slot == ItemData.Slot.WEAPON and b.slot == ItemData.Slot.WEAPON and a.two_handed != b.two_handed:
 		return not a.two_handed
 	if _type_rank(a) != _type_rank(b):
 		return _type_rank(a) < _type_rank(b)
-	if a.display_name != b.display_name:
-		return a.display_name.nocasecmp_to(b.display_name) < 0
-	return a.rarity < b.rarity
-
-
-func _bucket(item: ItemData) -> int:
-	if item.is_potion():
-		return 2
-	if item.slot == ItemData.Slot.WEAPON:
-		return 0
-	return 1
-
-
-func _bucket_name(bucket: int) -> String:
-	if bucket == 0:
-		return "Weapons"
-	if bucket == 1:
-		return "Armor"
-	return "Potions"
+	return a.display_name.nocasecmp_to(b.display_name) < 0
 
 
 func _type_rank(item: ItemData) -> int:
@@ -112,29 +104,38 @@ func _type_rank(item: ItemData) -> int:
 			return 10
 
 
-func _header(title: String) -> Label:
-	var label := Label.new()
-	label.text = title
-	label.add_theme_font_size_override("font_size", 16)
-	label.add_theme_color_override("font_color", Color(0, 0, 0, 1))
-	return label
+func _enter(folder: String) -> void:
+	_path.append(folder)
+	_show_folder.call_deferred()
 
 
-func _row(template: ItemData) -> Button:
-	var button := Button.new()
-	button.text = _row_title(template)
-	button.custom_minimum_size = Vector2(0, 32)
-	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
-	ButtonStyle.apply(button)
-	button.pressed.connect(_give.bind(template))
+func _up() -> void:
+	if _path.is_empty():
+		return
+	_path.remove_at(_path.size() - 1)
+	_show_folder.call_deferred()
+
+
+func _level_button(level: int) -> Button:
+	var button := _button("Level %d" % level, _set_level.bind(level))
+	if level == cheat_level:
+		ButtonStyle.apply_selected(button)
 	return button
 
 
-func _row_title(item: ItemData) -> String:
-	if item.is_potion():
-		return item.display_name
-	var rarity := "Common" if item.rarity == ItemData.Rarity.COMMON else "Uncommon"
-	return "%s    %s" % [item.display_name, rarity]
+func _set_level(level: int) -> void:
+	cheat_level = level
+	_show_folder.call_deferred()
+
+
+func _button(title: String, action: Callable) -> Button:
+	var button := Button.new()
+	button.text = title
+	button.custom_minimum_size = Vector2(0, 32)
+	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	ButtonStyle.apply(button)
+	button.pressed.connect(action)
+	return button
 
 
 func _give(template: ItemData) -> void:
@@ -147,7 +148,15 @@ func _give(template: ItemData) -> void:
 
 func _add_one_of_each() -> void:
 	var added := 0
-	for template in _catalog():
+	for rarity in [ItemData.Rarity.COMMON, ItemData.Rarity.UNCOMMON]:
+		for template in _sorted_items(false, rarity):
+			if PlayerState.inventory.size() >= 16:
+				break
+			if PlayerState.owns(template):
+				continue
+			PlayerState.inventory.append(template.roll_copy())
+			added += 1
+	for template in _sorted_items(true, ItemData.Rarity.COMMON):
 		if PlayerState.inventory.size() >= 16:
 			break
 		if PlayerState.owns(template):
