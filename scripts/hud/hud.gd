@@ -450,6 +450,8 @@ func _hand_tip(item: ItemData, slot: ItemData.Slot) -> String:
 	var equipped := PlayerState.item_in_slot(slot)
 	if equipped == item:
 		return text
+	if equipped == null and slot == ItemData.Slot.OFFHAND and PlayerState.weapon == item:
+		return text
 	if equipped == null and slot != ItemData.Slot.OFFHAND:
 		return text
 	var worn := PlayerState.weapon == item or PlayerState.offhand == item
