@@ -464,16 +464,16 @@ func _hand_tip(item: ItemData, slot: ItemData.Slot) -> String:
 func _tip_text(item: ItemData) -> String:
 	var text := "%s\n%s" % [item.display_name, item.bonus_text()]
 	var equipped := PlayerState.item_in_slot(item.slot)
+	var removed := _offhand_removed_by(item)
 	if item.slot == ItemData.Slot.OFFHAND and equipped == null:
 		var gain := _delta_line(item, null, false, true)
 		if gain != "":
 			text += "\n" + gain
 	elif equipped != null and equipped != item:
-		var delta := _delta_line(item, equipped)
+		var delta := _delta_line(item, equipped, false, false, removed)
 		if delta != "":
 			text += "\n" + delta
-	var removed := _offhand_removed_by(item)
-	if removed != null:
+	elif removed != null:
 		var loss := _loss_line(removed)
 		if loss != "":
 			text += "\n" + loss
@@ -500,8 +500,8 @@ func _loss_line(removed: ItemData) -> String:
 	return "\n".join(parts)
 
 
-func _delta_line(item: ItemData, other: ItemData, losses_only: bool = false, against_empty: bool = false) -> String:
-	if other == null and not against_empty:
+func _delta_line(item: ItemData, other: ItemData, losses_only: bool = false, against_empty: bool = false, removed: ItemData = null) -> String:
+	if other == null and removed == null and not against_empty:
 		return ""
 	var parts: PackedStringArray = []
 	var fields: Array[String] = ["health_bonus", "melee_bonus", "bolt_bonus"]
@@ -510,7 +510,9 @@ func _delta_line(item: ItemData, other: ItemData, losses_only: bool = false, aga
 		var now: int = int(item.get(fields[index]))
 		var was := 0
 		if other != null:
-			was = int(other.get(fields[index]))
+			was += int(other.get(fields[index]))
+		if removed != null:
+			was += int(removed.get(fields[index]))
 		var diff := now - was
 		if diff == 0 or (losses_only and diff > 0):
 			continue
