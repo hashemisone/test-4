@@ -267,16 +267,19 @@ func _show_tip(item: ItemData) -> void:
 
 
 func _tip_text(item: ItemData) -> String:
-	var body := "%s\n%s" % [item.display_name, item.bonus_text()]
+	var text := "%s\n%s" % [item.display_name, item.bonus_text()]
 	var equipped := PlayerState.item_in_slot(item.slot)
+	if equipped != null:
+		var other: ItemData = null if equipped == item else equipped
+		var delta := _delta_line(item, other)
+		if delta != "":
+			text += "\n" + delta
 	var removed := _offhand_removed_by(item)
-	if equipped == null and removed == null:
-		return body
-	var other: ItemData = null if equipped == null or equipped == item else equipped
-	var delta := _delta_line(item, other, removed)
-	if delta == "":
-		return body
-	return "%s\n%s" % [body, delta]
+	if removed != null:
+		var loss := _loss_line(removed)
+		if loss != "":
+			text += "\n" + loss
+	return text
 
 
 func _offhand_removed_by(item: ItemData) -> ItemData:
@@ -285,15 +288,28 @@ func _offhand_removed_by(item: ItemData) -> ItemData:
 	return PlayerState.item_in_slot(ItemData.Slot.OFFHAND)
 
 
-func _delta_line(item: ItemData, other: ItemData, removed: ItemData = null) -> String:
+func _loss_line(removed: ItemData) -> String:
+	var parts: PackedStringArray = []
+	var fields: Array[String] = ["health_bonus", "melee_bonus", "bolt_bonus"]
+	var names: Array[String] = ["Health", "Melee", "Bolt"]
+	for index in fields.size():
+		var diff := -int(removed.get(fields[index]))
+		if diff == 0:
+			continue
+		var color := "#1b7f34" if diff > 0 else "#c0392b"
+		var sign := "+" if diff > 0 else ""
+		parts.append("[color=%s]%s%d %s[/color]" % [color, sign, diff, names[index]])
+	return " ".join(parts)
+
+
+func _delta_line(item: ItemData, other: ItemData) -> String:
 	var parts: PackedStringArray = []
 	var fields: Array[String] = ["health_bonus", "melee_bonus", "bolt_bonus"]
 	var names: Array[String] = ["Health", "Melee", "Bolt"]
 	for index in fields.size():
 		var now: int = int(item.get(fields[index]))
 		var was: int = int(other.get(fields[index])) if other != null else 0
-		var lost: int = int(removed.get(fields[index])) if removed != null else 0
-		var diff := now - was - lost
+		var diff := now - was
 		if diff == 0:
 			continue
 		var color := "#1b7f34" if diff > 0 else "#c0392b"
