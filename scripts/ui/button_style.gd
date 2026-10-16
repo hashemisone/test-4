@@ -11,6 +11,7 @@ static func apply_selected(button: Button) -> void:
 
 
 static func _assign(button: Button, normal_fill: Color, hover_fill: Color, pressed_fill: Color, font: Color) -> void:
+	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	button.add_theme_stylebox_override("normal", _box(normal_fill))
 	button.add_theme_stylebox_override("hover", _box(hover_fill))
 	button.add_theme_stylebox_override("pressed", _box(pressed_fill))
