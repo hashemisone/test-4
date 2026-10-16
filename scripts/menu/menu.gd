@@ -6,6 +6,7 @@ func _ready() -> void:
 	ButtonStyle.apply($Panel/Play)
 	ButtonStyle.apply($Panel/Level)
 	ButtonStyle.apply($Panel/Quit)
+	ButtonStyle.apply($Panel/SettingsButton)
 	ButtonStyle.apply($Levels/Back)
 	ButtonStyle.apply($Levels/Test)
 	for number in 5:
@@ -13,6 +14,8 @@ func _ready() -> void:
 	$Panel/Play.pressed.connect(_on_play)
 	$Panel/Level.pressed.connect(_show_levels)
 	$Panel/Quit.pressed.connect(_on_quit)
+	$Panel/SettingsButton.pressed.connect(_show_settings)
+	$Settings.closed.connect(_show_title)
 	$Levels/Back.pressed.connect(_show_title)
 	$Levels/Test.pressed.connect(_on_play)
 
@@ -25,6 +28,14 @@ func _show_levels() -> void:
 func _show_title() -> void:
 	$Panel.visible = true
 	$Levels.visible = false
+	$Settings.visible = false
+
+
+func _show_settings() -> void:
+	$Panel.visible = false
+	$Levels.visible = false
+	$Settings.visible = true
+	$Settings.show_home()
 
 
 func _on_play() -> void:

@@ -17,6 +17,7 @@ config/features=PackedStringArray("4.6", "Forward Plus")
 [autoload]
 
 PlayerState="*res://scripts/autoload/player_state.gd"
+Keybinds="*res://scripts/autoload/keybinds.gd"
 
 [display]
 

@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://u9w1y3a5c7e9g"]
 
 [ext_resource type="Script" path="res://scripts/menu/menu.gd" id="1_menu"]
+[ext_resource type="PackedScene" path="res://scenes/ui/settings.tscn" id="2_settings"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
 bg_color = Color(1, 1, 1, 1)
@@ -42,7 +43,7 @@ layout_mode = 0
 offset_left = 170.0
 offset_top = 48.0
 offset_right = 470.0
-offset_bottom = 312.0
+offset_bottom = 348.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
 [node name="Title" type="Label" parent="Panel"]
@@ -98,6 +99,15 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_button")
 theme_override_styles/normal = SubResource("StyleBoxFlat_button")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_button")
 text = "Quit"
+
+[node name="SettingsButton" type="Button" parent="Panel"]
+layout_mode = 0
+offset_left = 70.0
+offset_top = 232.0
+offset_right = 230.0
+offset_bottom = 268.0
+theme_override_font_sizes/font_size = 16
+text = "Settings"
 
 [node name="Levels" type="Panel" parent="."]
 visible = false
@@ -181,3 +191,5 @@ offset_right = 544.0
 offset_bottom = 152.0
 theme_override_font_sizes/font_size = 14
 text = "5"
+
+[node name="Settings" parent="." instance=ExtResource("2_settings")]
