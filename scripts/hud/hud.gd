@@ -182,7 +182,7 @@ func _refresh_gear() -> void:
 		var item := PlayerState.item_in_slot(_slot_kinds[index])
 		var caption := _slot_buttons[index].get_node("Caption") as Label
 		caption.text = _slot_captions[index]
-		_slot_buttons[index].set_meta("bonus", item.bonus_text() if item != null else "")
+		_set_tip_item(_slot_buttons[index], item)
 		_show_item_icon(_slot_buttons[index], item)
 	for index in _bag_buttons.size():
 		var caption := _bag_buttons[index].get_node("Caption") as Label
@@ -193,8 +193,16 @@ func _refresh_gear() -> void:
 			caption.text = item.display_name
 		else:
 			caption.text = ""
-		_bag_buttons[index].set_meta("bonus", item.bonus_text() if item != null else "")
+		_set_tip_item(_bag_buttons[index], item)
 		_show_item_icon(_bag_buttons[index], item)
+
+
+func _set_tip_item(button: Button, item: ItemData) -> void:
+	if item == null:
+		if button.has_meta("tip_item"):
+			button.remove_meta("tip_item")
+	else:
+		button.set_meta("tip_item", item)
 
 
 func _process(delta: float) -> void:
@@ -208,14 +216,14 @@ func _process(delta: float) -> void:
 		_hover_button = hovered
 		_hover_time = 0.0
 		_hide_tip()
-	if _hover_button == null:
+	if _hover_button == null or not _hover_button.has_meta("tip_item"):
 		return
-	var bonus := str(_hover_button.get_meta("bonus", ""))
-	if bonus == "":
+	var hovered_item := _hover_button.get_meta("tip_item") as ItemData
+	if hovered_item == null:
 		return
 	_hover_time += delta
 	if _hover_time >= HOVER_DELAY:
-		_show_tip(bonus)
+		_show_tip(hovered_item)
 
 
 func _button_under_mouse() -> Button:
@@ -232,12 +240,14 @@ func _contains_mouse(button: Button) -> bool:
 	return button.get_global_rect().has_point(button.get_global_mouse_position())
 
 
-func _show_tip(text: String) -> void:
+func _show_tip(item: ItemData) -> void:
 	var tip := $HoverTip
-	var label := $HoverTip/Label as Label
-	label.text = text
+	var label := $HoverTip/Label as RichTextLabel
+	label.text = _tip_text(item)
 	tip.visible = true
-	var text_size := label.get_minimum_size() + Vector2(16, 10)
+	var text_size := label.get_minimum_size() + Vector2(16, 12)
+	if text_size.x < 88.0:
+		text_size.x = 88.0
 	tip.size = text_size
 	var pos := get_viewport().get_mouse_position() + Vector2(14, 18)
 	if pos.x + text_size.x > 628.0:
@@ -245,6 +255,34 @@ func _show_tip(text: String) -> void:
 	if pos.y + text_size.y > 348.0:
 		pos.y = get_viewport().get_mouse_position().y - text_size.y - 8.0
 	tip.position = pos
+
+
+func _tip_text(item: ItemData) -> String:
+	var body := "%s\n%s" % [item.display_name, item.bonus_text()]
+	var equipped := PlayerState.item_in_slot(item.slot)
+	if equipped == null:
+		return body
+	var other: ItemData = null if equipped == item else equipped
+	var delta := _delta_line(item, other)
+	if delta == "":
+		return body
+	return "%s\n%s" % [body, delta]
+
+
+func _delta_line(item: ItemData, other: ItemData) -> String:
+	var parts: PackedStringArray = []
+	var fields: Array[String] = ["health_bonus", "melee_bonus", "bolt_bonus"]
+	var names: Array[String] = ["Health", "Melee", "Bolt"]
+	for index in fields.size():
+		var now: int = int(item.get(fields[index]))
+		var was: int = int(other.get(fields[index])) if other != null else 0
+		var diff := now - was
+		if diff == 0:
+			continue
+		var color := "#1b7f34" if diff > 0 else "#c0392b"
+		var sign := "+" if diff > 0 else ""
+		parts.append("[color=%s]%s%d %s[/color]" % [color, sign, diff, names[index]])
+	return " ".join(parts)
 
 
 func _hide_tip() -> void:
