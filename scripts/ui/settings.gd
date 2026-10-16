@@ -9,6 +9,8 @@ var _prompt: Label
 var _listening := false
 var _action := ""
 var _index := -1
+var _tip: Panel
+var _tip_label: Label
 
 
 func _ready() -> void:
@@ -21,6 +23,7 @@ func _ready() -> void:
 
 func show_home() -> void:
 	_listening = false
+	_hide_tip()
 	_home.visible = true
 	_keys.visible = false
 
@@ -57,6 +60,7 @@ func _build() -> void:
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	_keys.add_child(scroll)
 	_list = VBoxContainer.new()
+	_list.name = "BindingList"
 	_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_list.add_theme_constant_override("separation", 4)
 	scroll.add_child(_list)
@@ -75,27 +79,94 @@ func _build() -> void:
 	keys_back.size = Vector2(140, 40)
 	keys_back.pressed.connect(show_home)
 	_keys.add_child(keys_back)
+	_tip = Panel.new()
+	_tip.visible = false
+	_tip.z_index = 20
+	_tip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_tip.add_theme_stylebox_override("panel", _frame())
+	add_child(_tip)
+	_tip_label = Label.new()
+	_tip_label.position = Vector2(8, 6)
+	_tip_label.add_theme_color_override("font_color", Color(0, 0, 0, 1))
+	_tip_label.add_theme_font_size_override("font_size", 13)
+	_tip.add_child(_tip_label)
 
 
 func _show_keys() -> void:
 	_listening = false
 	_home.visible = false
 	_keys.visible = true
-	_prompt.text = "Click a binding, then press a key or button."
+	_hide_tip()
+	_prompt.text = "Click a keyboard or gamepad box, then press a new key or button."
 	for child in _list.get_children():
 		_list.remove_child(child)
 		child.free()
 	for action in Keybinds.actions():
 		var events := Keybinds.bindings(action)
 		for index in events.size():
-			var title := "%s    %s" % [Keybinds.label(action), Keybinds.event_label(events[index])]
-			var button := Button.new()
-			button.text = title
-			button.alignment = HORIZONTAL_ALIGNMENT_LEFT
-			button.custom_minimum_size = Vector2(0, 30)
-			ButtonStyle.apply(button)
-			button.pressed.connect(_listen.bind(action, index))
-			_list.add_child(button)
+			_list.add_child(_binding_row(action, index, events[index]))
+
+
+func _binding_row(action: String, index: int, event: InputEvent) -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 4)
+	var keyboard := "—"
+	var gamepad := "—"
+	if event is InputEventKey:
+		keyboard = Keybinds.event_label(event)
+	else:
+		gamepad = Keybinds.event_label(event)
+	row.add_child(_binding_box(Keybinds.label(action), false, action, index))
+	row.add_child(_binding_box(keyboard, event is InputEventKey, action, index))
+	row.add_child(_binding_box(gamepad, not event is InputEventKey, action, index))
+	return row
+
+
+func _binding_box(text: String, clickable: bool, action: String, index: int) -> Button:
+	var button := Button.new()
+	button.text = text
+	button.clip_text = true
+	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	button.custom_minimum_size = Vector2(168, 30)
+	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	button.add_theme_font_size_override("font_size", 13)
+	ButtonStyle.apply(button)
+	button.set_meta("full_text", text)
+	button.mouse_entered.connect(_hover_box.bind(button))
+	button.mouse_exited.connect(_hide_tip)
+	if clickable:
+		button.pressed.connect(_listen.bind(action, index))
+	return button
+
+
+func _hover_box(button: Button) -> void:
+	var full := str(button.get_meta("full_text"))
+	if _fits(button, full):
+		_hide_tip()
+		return
+	_tip_label.text = full
+	_tip_label.size = _tip_label.get_minimum_size()
+	_tip.size = _tip_label.size + Vector2(16, 12)
+	var pos := button.get_global_rect().position + Vector2(0, button.size.y + 4)
+	if pos.x + _tip.size.x > 628.0:
+		pos.x = 628.0 - _tip.size.x
+	if pos.y + _tip.size.y > 348.0:
+		pos.y = button.get_global_rect().position.y - _tip.size.y - 4
+	_tip.position = pos
+	_tip.visible = true
+
+
+func _fits(button: Button, text: String) -> bool:
+	var font := button.get_theme_font("font")
+	if font == null:
+		return true
+	var width := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, button.get_theme_font_size("font_size")).x
+	return width <= button.size.x - 12.0
+
+
+func _hide_tip() -> void:
+	if _tip != null:
+		_tip.visible = false
 
 
 func _listen(action: String, index: int) -> void:
