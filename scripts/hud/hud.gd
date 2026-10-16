@@ -149,7 +149,7 @@ func _equip_from_bag(index: int) -> void:
 		return
 	var item := PlayerState.inventory[index]
 	if item.slot == ItemData.Slot.WEAPON and not item.two_handed:
-		if PlayerState.weapon == null:
+		if not PlayerState.can_wield_offhand(item):
 			_close_hand_choice()
 			PlayerState.equip_to(item, ItemData.Slot.WEAPON)
 			return
