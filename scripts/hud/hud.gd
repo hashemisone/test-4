@@ -205,7 +205,7 @@ func _refresh_gear() -> void:
 	for index in _slot_buttons.size():
 		var item := PlayerState.item_in_slot(_slot_kinds[index])
 		var caption := _slot_buttons[index].get_node("Caption") as Label
-		caption.text = _slot_captions[index]
+		caption.text = item.display_name if item != null else _slot_captions[index]
 		_set_tip_item(_slot_buttons[index], item)
 		_show_item_icon(_slot_buttons[index], item)
 		var button := _slot_buttons[index]
