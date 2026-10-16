@@ -5,16 +5,7 @@ signal changed
 const BASE_STATS := preload("res://resources/stats/player_stats.tres")
 const SWORD := preload("res://resources/items/sword.tres")
 const ARMOR := preload("res://resources/items/armor.tres")
-const CHARM := preload("res://resources/items/charm.tres")
-const HELMET := preload("res://resources/items/helmet.tres")
-const BOOTS := preload("res://resources/items/boots.tres")
-const SHIELD := preload("res://resources/items/offhand.tres")
-const CAPE := preload("res://resources/items/cape.tres")
 const PANTS := preload("res://resources/items/pants.tres")
-const BRACELET := preload("res://resources/items/bracelet.tres")
-const GLOVES := preload("res://resources/items/gloves.tres")
-const GREATSWORD := preload("res://resources/items/greatsword.tres")
-const SPARE_SWORD := preload("res://resources/items/sword_b.tres")
 
 var inventory: Array[ItemData] = []
 var weapon: ItemData
@@ -37,17 +28,15 @@ func _ready() -> void:
 func start_run() -> void:
 	weapon = SWORD.roll_copy()
 	armor = ARMOR.roll_copy()
-	accessory = CHARM.roll_copy()
-	helmet = HELMET.roll_copy()
-	boots = BOOTS.roll_copy()
-	offhand = SHIELD.roll_copy()
-	cape = CAPE.roll_copy()
+	accessory = null
+	helmet = null
+	boots = null
+	offhand = null
+	cape = null
 	pants = PANTS.roll_copy()
-	bracelet = BRACELET.roll_copy()
-	gloves = GLOVES.roll_copy()
+	bracelet = null
+	gloves = null
 	inventory = []
-	inventory.append(GREATSWORD.roll_copy())
-	inventory.append(SPARE_SWORD.roll_copy())
 	current_health = max_health()
 	changed.emit()
 
