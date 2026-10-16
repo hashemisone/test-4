@@ -19,6 +19,10 @@ var pants: ItemData
 var bracelet: ItemData
 var gloves: ItemData
 var current_health := 100
+var bonus_health := 0
+var bonus_health_left := 0.0
+var bonus_melee := 0
+var bonus_melee_left := 0.0
 
 
 func _ready() -> void:
@@ -37,16 +41,60 @@ func start_run() -> void:
 	bracelet = null
 	gloves = null
 	inventory = []
+	bonus_health = 0
+	bonus_health_left = 0.0
+	bonus_melee = 0
+	bonus_melee_left = 0.0
 	current_health = max_health()
 	changed.emit()
 
 
 func max_health() -> int:
-	return BASE_STATS.max_health + _bonus("health_bonus")
+	return BASE_STATS.max_health + _bonus("health_bonus") + bonus_health
 
 
 func melee_damage() -> int:
-	return BASE_STATS.melee_damage + _bonus("melee_bonus")
+	return BASE_STATS.melee_damage + _bonus("melee_bonus") + bonus_melee
+
+
+func _process(delta: float) -> void:
+	var dirty := false
+	if bonus_health_left > 0.0:
+		var shown := ceili(bonus_health_left)
+		bonus_health_left = maxf(bonus_health_left - delta, 0.0)
+		if bonus_health_left == 0.0:
+			bonus_health = 0
+			current_health = mini(current_health, max_health())
+			dirty = true
+		elif ceili(bonus_health_left) != shown:
+			dirty = true
+	if bonus_melee_left > 0.0:
+		var melee_shown := ceili(bonus_melee_left)
+		bonus_melee_left = maxf(bonus_melee_left - delta, 0.0)
+		if bonus_melee_left == 0.0:
+			bonus_melee = 0
+			dirty = true
+		elif ceili(bonus_melee_left) != melee_shown:
+			dirty = true
+	if dirty:
+		changed.emit()
+
+
+func use_potion(item: ItemData) -> void:
+	if item == null or not item.is_potion() or not inventory.has(item):
+		return
+	inventory.erase(item)
+	if item.heal_amount > 0:
+		if current_health >= max_health() and item.buff_health > 0:
+			bonus_health = item.buff_health
+			bonus_health_left = item.buff_seconds
+			current_health = max_health()
+		else:
+			current_health = mini(current_health + item.heal_amount, max_health())
+	if item.buff_melee > 0:
+		bonus_melee = item.buff_melee
+		bonus_melee_left = item.buff_seconds
+	changed.emit()
 
 
 func bolt_damage() -> int:

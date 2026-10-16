@@ -152,6 +152,10 @@ func _equip_from_bag(index: int) -> void:
 	if index < 0 or index >= PlayerState.inventory.size():
 		return
 	var item := PlayerState.inventory[index]
+	if item.is_potion():
+		_close_hand_choice()
+		PlayerState.use_potion(item)
+		return
 	if item.slot == ItemData.Slot.WEAPON and not item.two_handed:
 		if not PlayerState.can_wield_offhand(item):
 			_close_hand_choice()
@@ -201,6 +205,7 @@ func _refresh_gear() -> void:
 	health_label.text = "Health %d/%d" % [PlayerState.current_health, PlayerState.max_health()]
 	melee_label.text = "Melee %d" % PlayerState.melee_damage()
 	bolt_label.text = "Bolt %d" % PlayerState.bolt_damage()
+	_refresh_buffs()
 	var blocks_offhand := PlayerState.blocks_offhand()
 	for index in _slot_buttons.size():
 		var item := PlayerState.item_in_slot(_slot_kinds[index])
@@ -360,7 +365,25 @@ func _choose_offhand() -> void:
 		PlayerState.equip_to(item, ItemData.Slot.OFFHAND)
 
 
+func _refresh_buffs() -> void:
+	var label := get_node_or_null("BuffLabel") as Label
+	if label == null:
+		return
+	var lines: PackedStringArray = []
+	if PlayerState.bonus_health > 0:
+		lines.append("Health +%d %ds" % [PlayerState.bonus_health, ceili(PlayerState.bonus_health_left)])
+	if PlayerState.bonus_melee > 0:
+		lines.append("Attack +%d %ds" % [PlayerState.bonus_melee, ceili(PlayerState.bonus_melee_left)])
+	label.text = "\n".join(lines)
+	label.visible = lines.size() > 0
+
+
 func _show_tip(item: ItemData) -> void:
+	if item.is_potion():
+		if _tip_off != null:
+			_tip_off.visible = false
+		_place_one($HoverTip, "%s\n%s" % [item.display_name, item.bonus_text()])
+		return
 	if item.slot == ItemData.Slot.WEAPON and not item.two_handed:
 		_show_two_tips(item)
 		return

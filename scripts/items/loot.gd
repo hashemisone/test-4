@@ -17,6 +17,8 @@ const FAMILIES: Array = [
 	["res://resources/items/pants.tres", "res://resources/items/pants_uncommon.tres"],
 	["res://resources/items/bracelet.tres", "res://resources/items/bracelet_uncommon.tres"],
 	["res://resources/items/gloves.tres", "res://resources/items/gloves_uncommon.tres"],
+	["res://resources/items/health_potion.tres"],
+	["res://resources/items/attack_potion.tres"],
 ]
 
 

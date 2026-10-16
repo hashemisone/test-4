@@ -19,6 +19,10 @@ enum Rarity { COMMON, UNCOMMON }
 @export var health_bonus: int = 0
 @export var melee_bonus: int = 0
 @export var bolt_bonus: int = 0
+@export var heal_amount: int = 0
+@export var buff_health: int = 0
+@export var buff_melee: int = 0
+@export var buff_seconds: float = 0.0
 
 
 func roll_copy() -> ItemData:
@@ -80,7 +84,18 @@ func slot_title() -> String:
 			return "Accessory"
 
 
+func is_potion() -> bool:
+	return heal_amount > 0 or buff_health > 0 or buff_melee > 0
+
+
 func bonus_text() -> String:
+	if heal_amount > 0:
+		var text := "Heal %d" % heal_amount
+		if buff_health > 0:
+			text += "\nFull: +%d Health for %ds" % [buff_health, int(buff_seconds)]
+		return text
+	if buff_melee > 0:
+		return "Attack +%d for %ds" % [buff_melee, int(buff_seconds)]
 	if health_bonus != 0:
 		return "Health +%d" % health_bonus
 	if melee_bonus != 0:

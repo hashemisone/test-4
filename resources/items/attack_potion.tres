@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1_item"]
+[ext_resource type="Texture2D" path="res://art/items/attack_potion.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+display_name = "Attack Potion"
+icon = ExtResource("2_icon")
+buff_melee = 4
+buff_seconds = 30.0
