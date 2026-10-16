@@ -310,9 +310,9 @@ func _choice_button(label: String, at: Vector2) -> Button:
 	return button
 
 
-func _frame_box() -> StyleBoxFlat:
+func _frame_box(fill: Color = Color(1, 1, 1, 1)) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(1, 1, 1, 1)
+	style.bg_color = fill
 	style.set_border_width_all(4)
 	style.border_color = Color(0, 0, 0, 1)
 	return style
@@ -362,15 +362,19 @@ func _show_tip(item: ItemData) -> void:
 		return
 	if _tip_off != null:
 		_tip_off.visible = false
-	_place_one($HoverTip, _tip_text(item))
+	var blocked := _offhand_blocked(item)
+	_place_one($HoverTip, _mute(_tip_text(item), blocked), blocked)
 
 
 func _show_two_tips(item: ItemData) -> void:
 	var main_tip := $HoverTip as Panel
 	var main_label := main_tip.get_node("Label") as RichTextLabel
 	var off_label := _tip_off.get_node("Label") as RichTextLabel
+	var off_blocked := _offhand_blocked(item)
 	main_label.text = _hand_tip(item, ItemData.Slot.WEAPON)
-	off_label.text = _hand_tip(item, ItemData.Slot.OFFHAND)
+	off_label.text = _mute(_hand_tip(item, ItemData.Slot.OFFHAND), off_blocked)
+	_paint_tip(main_tip, false)
+	_paint_tip(_tip_off, off_blocked)
 	var main_size := _tip_size(main_label)
 	var off_size := _tip_size(off_label)
 	main_tip.size = main_size
@@ -394,9 +398,34 @@ func _show_two_tips(item: ItemData) -> void:
 	_tip_off.position = origin + Vector2(main_size.x + gap, 0)
 
 
-func _place_one(tip: Panel, text: String) -> void:
+func _offhand_blocked(item: ItemData) -> bool:
+	if not PlayerState.blocks_offhand() or PlayerState.offhand == item:
+		return false
+	if item.slot == ItemData.Slot.OFFHAND:
+		return true
+	return item.slot == ItemData.Slot.WEAPON and not item.two_handed
+
+
+func _paint_tip(tip: Panel, blocked: bool) -> void:
+	var fill := Color(0.75, 0.75, 0.75, 1) if blocked else Color(1, 1, 1, 1)
+	tip.add_theme_stylebox_override("panel", _frame_box(fill))
+	var label := tip.get_node("Label") as RichTextLabel
+	var font := Color(0.35, 0.35, 0.35, 1) if blocked else Color(0, 0, 0, 1)
+	label.add_theme_color_override("default_color", font)
+
+
+func _mute(text: String, blocked: bool) -> String:
+	if not blocked:
+		return text
+	var colors := RegEx.new()
+	colors.compile("\\[/?color[^\\]]*\\]")
+	return colors.sub(text, "", true)
+
+
+func _place_one(tip: Panel, text: String, blocked: bool = false) -> void:
 	var label := tip.get_node("Label") as RichTextLabel
 	label.text = text
+	_paint_tip(tip, blocked)
 	tip.visible = true
 	var text_size := _tip_size(label)
 	tip.size = text_size
