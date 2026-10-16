@@ -9,6 +9,7 @@ const CHARM := preload("res://resources/items/charm.tres")
 const HELMET := preload("res://resources/items/helmet.tres")
 const BOOTS := preload("res://resources/items/boots.tres")
 const SHIELD := preload("res://resources/items/offhand.tres")
+const GREATSWORD := preload("res://resources/items/greatsword.tres")
 
 var inventory: Array[ItemData] = []
 var weapon: ItemData
@@ -32,6 +33,7 @@ func start_run() -> void:
 	boots = BOOTS
 	offhand = SHIELD
 	inventory = []
+	inventory.append(GREATSWORD)
 	current_health = max_health()
 	changed.emit()
 
@@ -69,15 +71,25 @@ func refill() -> void:
 	changed.emit()
 
 
+func blocks_offhand() -> bool:
+	return weapon != null and weapon.two_handed
+
+
 func equip(item: ItemData) -> void:
 	if item == null:
+		return
+	if item.slot == ItemData.Slot.OFFHAND and blocks_offhand():
 		return
 	var old_max := max_health()
 	var previous := item_in_slot(item.slot)
 	_set_slot(item.slot, item)
 	inventory.erase(item)
-	if previous != null:
+	if previous != null and previous != item:
 		inventory.append(previous)
+	if item.two_handed and offhand != null:
+		var held := offhand
+		offhand = null
+		inventory.append(held)
 	_shift_health(old_max)
 	changed.emit()
 

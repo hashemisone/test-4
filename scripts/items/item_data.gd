@@ -8,6 +8,7 @@ enum Rarity { COMMON, UNCOMMON }
 @export var icon: Texture2D
 @export var slot: Slot = Slot.WEAPON
 @export var rarity: Rarity = Rarity.COMMON
+@export var two_handed: bool = false
 @export var health_bonus: int = 0
 @export var melee_bonus: int = 0
 @export var bolt_bonus: int = 0

@@ -181,13 +181,19 @@ func _refresh_gear() -> void:
 	health_label.text = "Health %d/%d" % [PlayerState.current_health, PlayerState.max_health()]
 	melee_label.text = "Melee %d" % PlayerState.melee_damage()
 	bolt_label.text = "Bolt %d" % PlayerState.bolt_damage()
+	var blocks_offhand := PlayerState.blocks_offhand()
 	for index in _slot_buttons.size():
 		var item := PlayerState.item_in_slot(_slot_kinds[index])
 		var caption := _slot_buttons[index].get_node("Caption") as Label
 		caption.text = _slot_captions[index]
 		_set_tip_item(_slot_buttons[index], item)
 		_show_item_icon(_slot_buttons[index], item)
-		ButtonStyle.apply_item(_slot_buttons[index], item != null and item.rarity == ItemData.Rarity.UNCOMMON)
+		var button := _slot_buttons[index]
+		if _slot_kinds[index] == ItemData.Slot.OFFHAND and blocks_offhand:
+			ButtonStyle.apply_blocked(button)
+		else:
+			button.disabled = false
+			ButtonStyle.apply_item(button, item != null and item.rarity == ItemData.Rarity.UNCOMMON)
 	for index in _bag_buttons.size():
 		var caption := _bag_buttons[index].get_node("Caption") as Label
 		caption.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
