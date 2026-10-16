@@ -26,14 +26,14 @@ func _ready() -> void:
 
 
 func start_run() -> void:
-	weapon = SWORD.roll_copy()
-	armor = ARMOR.roll_copy()
+	weapon = SWORD.lowest_copy()
+	armor = ARMOR.lowest_copy()
 	accessory = null
 	helmet = null
 	boots = null
 	offhand = null
 	cape = null
-	pants = PANTS.roll_copy()
+	pants = PANTS.lowest_copy()
 	bracelet = null
 	gloves = null
 	inventory = []

@@ -22,10 +22,21 @@ enum Rarity { COMMON, UNCOMMON }
 
 
 func roll_copy() -> ItemData:
+	return _copy_with(false)
+
+
+func lowest_copy() -> ItemData:
+	return _copy_with(true)
+
+
+func _copy_with(lowest: bool) -> ItemData:
 	var copy := duplicate() as ItemData
 	if copy.source_id == "":
 		copy.source_id = resource_path
-	copy._roll_stats()
+	if lowest:
+		copy._apply_floor()
+	else:
+		copy._roll_stats()
 	return copy
 
 
@@ -39,6 +50,18 @@ func _roll_stats() -> void:
 	health_bonus = _roll_span(health_min, health_max)
 	melee_bonus = _roll_span(melee_min, melee_max)
 	bolt_bonus = _roll_span(bolt_min, bolt_max)
+
+
+func _apply_floor() -> void:
+	health_bonus = _floor_span(health_min, health_max)
+	melee_bonus = _floor_span(melee_min, melee_max)
+	bolt_bonus = _floor_span(bolt_min, bolt_max)
+
+
+func _floor_span(low: int, high: int) -> int:
+	if high <= 0:
+		return 0
+	return mini(low, high)
 
 
 func _roll_span(low: int, high: int) -> int:
