@@ -363,7 +363,7 @@ func _show_tip(item: ItemData) -> void:
 	if _tip_off != null:
 		_tip_off.visible = false
 	var blocked := _offhand_blocked(item)
-	_place_one($HoverTip, _mute(_tip_text(item), blocked), blocked)
+	_place_one($HoverTip, _tip_text(item), blocked)
 
 
 func _show_two_tips(item: ItemData) -> void:
@@ -372,7 +372,7 @@ func _show_two_tips(item: ItemData) -> void:
 	var off_label := _tip_off.get_node("Label") as RichTextLabel
 	var off_blocked := _offhand_blocked(item)
 	main_label.text = _hand_tip(item, ItemData.Slot.WEAPON)
-	off_label.text = _mute(_hand_tip(item, ItemData.Slot.OFFHAND), off_blocked)
+	off_label.text = _hand_tip(item, ItemData.Slot.OFFHAND)
 	_paint_tip(main_tip, false)
 	_paint_tip(_tip_off, off_blocked)
 	var main_size := _tip_size(main_label)
@@ -399,7 +399,11 @@ func _show_two_tips(item: ItemData) -> void:
 
 
 func _offhand_blocked(item: ItemData) -> bool:
-	if not PlayerState.blocks_offhand() or PlayerState.offhand == item:
+	if PlayerState.offhand == item:
+		return false
+	if item.slot == ItemData.Slot.WEAPON and not item.two_handed and PlayerState.weapon == item:
+		return true
+	if not PlayerState.blocks_offhand():
 		return false
 	if item.slot == ItemData.Slot.OFFHAND:
 		return true
@@ -412,14 +416,6 @@ func _paint_tip(tip: Panel, blocked: bool) -> void:
 	var label := tip.get_node("Label") as RichTextLabel
 	var font := Color(0.35, 0.35, 0.35, 1) if blocked else Color(0, 0, 0, 1)
 	label.add_theme_color_override("default_color", font)
-
-
-func _mute(text: String, blocked: bool) -> String:
-	if not blocked:
-		return text
-	var colors := RegEx.new()
-	colors.compile("\\[/?color[^\\]]*\\]")
-	return colors.sub(text, "", true)
 
 
 func _place_one(tip: Panel, text: String, blocked: bool = false) -> void:
