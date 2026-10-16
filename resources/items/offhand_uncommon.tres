@@ -9,4 +9,5 @@ display_name = "Shield"
 icon = ExtResource("2_icon")
 slot = 5
 rarity = 1
-health_bonus = 20
+health_min = 11
+health_max = 15

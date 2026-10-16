@@ -9,4 +9,5 @@ display_name = "Helmet"
 icon = ExtResource("2_icon")
 slot = 3
 rarity = 1
-health_bonus = 25
+health_min = 16
+health_max = 20

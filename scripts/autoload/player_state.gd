@@ -27,15 +27,15 @@ func _ready() -> void:
 
 
 func start_run() -> void:
-	weapon = SWORD
-	armor = ARMOR
-	accessory = CHARM
-	helmet = HELMET
-	boots = BOOTS
-	offhand = SHIELD
+	weapon = SWORD.roll_copy()
+	armor = ARMOR.roll_copy()
+	accessory = CHARM.roll_copy()
+	helmet = HELMET.roll_copy()
+	boots = BOOTS.roll_copy()
+	offhand = SHIELD.roll_copy()
 	inventory = []
-	inventory.append(GREATSWORD)
-	inventory.append(SPARE_SWORD)
+	inventory.append(GREATSWORD.roll_copy())
+	inventory.append(SPARE_SWORD.roll_copy())
 	current_health = max_health()
 	changed.emit()
 
@@ -55,12 +55,22 @@ func bolt_damage() -> int:
 func owns(item: ItemData) -> bool:
 	if item == null:
 		return false
-	if inventory.has(item):
-		return true
+	var kind := item.kind_id()
 	for held in [weapon, armor, accessory, helmet, boots, offhand]:
-		if held == item:
+		if _same_kind(held, item, kind):
+			return true
+	for held in inventory:
+		if _same_kind(held, item, kind):
 			return true
 	return false
+
+
+func _same_kind(held: ItemData, item: ItemData, kind: String) -> bool:
+	if held == null:
+		return false
+	if held == item:
+		return true
+	return kind != "" and held.kind_id() == kind
 
 
 func can_wield_offhand(item: ItemData) -> bool:

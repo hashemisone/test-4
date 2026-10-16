@@ -71,7 +71,7 @@ func _drop_loot() -> void:
 	if drop == null or PlayerState.owns(drop):
 		return
 	var pickup: Node = PICKUP_SCENE.instantiate()
-	pickup.set("item", drop)
+	pickup.set("item", drop.roll_copy())
 	var at := global_position + Vector2(0, -18)
 	get_parent().add_child(pickup)
 	pickup.global_position = at

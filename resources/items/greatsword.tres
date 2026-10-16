@@ -9,4 +9,5 @@ display_name = "Greatsword"
 icon = ExtResource("2_icon")
 slot = 0
 two_handed = true
-melee_bonus = 8
+melee_min = 7
+melee_max = 10
