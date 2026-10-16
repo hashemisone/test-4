@@ -7,8 +7,6 @@
 [ext_resource type="PackedScene" path="res://scenes/hud/hud.tscn" id="5_hud"]
 [ext_resource type="PackedScene" path="res://scenes/exit/exit.tscn" id="6_exit"]
 [ext_resource type="PackedScene" path="res://scenes/enemy/shooter.tscn" id="7_shooter"]
-[ext_resource type="Resource" path="res://resources/items/boots_uncommon.tres" id="8_boots"]
-[ext_resource type="Resource" path="res://resources/items/offhand_uncommon.tres" id="9_offhand"]
 
 [node name="Room2" type="Node2D"]
 goal_text = "Kill both, then enter the exit"
@@ -18,11 +16,9 @@ script = ExtResource("1_main")
 
 [node name="Dummy" parent="." instance=ExtResource("3_dummy")]
 position = Vector2(240, 320)
-drop = ExtResource("8_boots")
 
 [node name="Shooter" parent="." instance=ExtResource("7_shooter")]
 position = Vector2(390, 320)
-drop = ExtResource("9_offhand")
 
 [node name="Player" parent="." instance=ExtResource("4_player")]
 position = Vector2(96, 320)

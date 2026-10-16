@@ -80,7 +80,7 @@ func can_wield_offhand(item: ItemData) -> bool:
 
 
 func collect(item: ItemData) -> bool:
-	if item == null or owns(item) or inventory.size() >= 9:
+	if item == null or inventory.size() >= 9:
 		return false
 	inventory.append(item)
 	changed.emit()

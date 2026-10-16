@@ -14,7 +14,7 @@ const SHOT_COOLDOWN := 1.35
 const TINT := Color(0.62, 0.72, 1.2)
 const PICKUP_SCENE := preload("res://scenes/pickup/pickup.tscn")
 
-@export var drop: ItemData
+@export var level := 1
 
 @export var max_health := 22
 var health := 22
@@ -86,10 +86,8 @@ func take_damage(amount: int) -> void:
 
 
 func _drop_loot() -> void:
-	if drop == null or PlayerState.owns(drop):
-		return
 	var pickup: Node = PICKUP_SCENE.instantiate()
-	pickup.set("item", drop.roll_copy())
+	pickup.set("item", Loot.roll(level))
 	var at := global_position + Vector2(0, -18)
 	get_parent().add_child(pickup)
 	pickup.global_position = at
