@@ -7,7 +7,14 @@ static func apply(button: Button) -> void:
 
 
 static func apply_selected(button: Button) -> void:
-	_assign(button, Color(0.12, 0.12, 0.12, 1), Color(0.3, 0.34, 0.36, 1), Color(0.05, 0.05, 0.05, 1), Color(1, 1, 1, 1))
+	var fill := Color(0.12, 0.12, 0.12, 1)
+	var box := _box(fill)
+	button.mouse_default_cursor_shape = Control.CURSOR_ARROW
+	for state in ["normal", "hover", "pressed", "focus", "disabled"]:
+		button.add_theme_stylebox_override(state, box)
+	var font := Color(1, 1, 1, 1)
+	for key in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color", "font_disabled_color"]:
+		button.add_theme_color_override(key, font)
 
 
 static func _assign(button: Button, normal_fill: Color, hover_fill: Color, pressed_fill: Color, font: Color) -> void:
