@@ -30,6 +30,11 @@ var _slot_buttons: Array[Button] = []
 var _slot_kinds: Array[ItemData.Slot] = []
 var _slot_captions: Array[String] = []
 var _bag_buttons: Array[Button] = []
+var _choice_item: ItemData
+var _choice_root: Control
+var _choice_panel: Panel
+var _choice_off: Button
+var _tip_off: Panel
 
 
 func _ready() -> void:
@@ -56,6 +61,7 @@ func _ready() -> void:
 	character_tab_button.pressed.connect(_show_character_tab)
 	inventory_tab_button.pressed.connect(_show_inventory_tab)
 	PlayerState.changed.connect(_refresh_gear)
+	_build_hand_choice()
 	_apply_open_state()
 
 
@@ -141,7 +147,12 @@ func _unequip_slot(slot: ItemData.Slot) -> void:
 func _equip_from_bag(index: int) -> void:
 	if index < 0 or index >= PlayerState.inventory.size():
 		return
-	PlayerState.equip(PlayerState.inventory[index])
+	var item := PlayerState.inventory[index]
+	if item.slot == ItemData.Slot.WEAPON and not item.two_handed:
+		_open_hand_choice(item, _bag_buttons[index])
+		return
+	_close_hand_choice()
+	PlayerState.equip(item)
 
 
 func _apply_open_state() -> void:
@@ -163,6 +174,7 @@ func _apply_tab() -> void:
 	inventory_page.visible = not character_tab
 	_paint_tab(character_tab_button, character_tab)
 	_paint_tab(inventory_tab_button, not character_tab)
+	_close_hand_choice()
 	_hover_button = null
 	_hover_time = 0.0
 	_hide_tip()
@@ -217,7 +229,7 @@ func _set_tip_item(button: Button, item: ItemData) -> void:
 
 
 func _process(delta: float) -> void:
-	if not gear_open:
+	if not gear_open or (_choice_root != null and _choice_root.visible):
 		_hover_button = null
 		_hover_time = 0.0
 		_hide_tip()
@@ -249,14 +261,140 @@ func _contains_mouse(button: Button) -> bool:
 	return button.get_global_rect().has_point(button.get_global_mouse_position())
 
 
+func _build_hand_choice() -> void:
+	_tip_off = $HoverTip.duplicate()
+	_tip_off.name = "HoverTipOff"
+	add_child(_tip_off)
+	_tip_off.visible = false
+	_choice_root = Control.new()
+	_choice_root.name = "HandChoice"
+	_choice_root.z_index = 30
+	_choice_root.mouse_filter = Control.MOUSE_FILTER_STOP
+	_choice_root.position = Vector2.ZERO
+	_choice_root.size = Vector2(640, 360)
+	_choice_root.visible = false
+	add_child(_choice_root)
+	var blocker := Button.new()
+	blocker.flat = true
+	blocker.position = Vector2.ZERO
+	blocker.size = Vector2(640, 360)
+	var empty := StyleBoxEmpty.new()
+	for state in ["normal", "hover", "pressed", "focus", "disabled"]:
+		blocker.add_theme_stylebox_override(state, empty)
+	blocker.pressed.connect(_close_hand_choice)
+	_choice_root.add_child(blocker)
+	_choice_panel = Panel.new()
+	_choice_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	_choice_panel.add_theme_stylebox_override("panel", _frame_box())
+	_choice_panel.size = Vector2(108, 84)
+	_choice_root.add_child(_choice_panel)
+	var main_button := _choice_button("Main", Vector2(8, 8))
+	main_button.pressed.connect(_choose_main)
+	_choice_panel.add_child(main_button)
+	_choice_off = _choice_button("Off-hand", Vector2(8, 44))
+	_choice_off.pressed.connect(_choose_offhand)
+	_choice_panel.add_child(_choice_off)
+
+
+func _choice_button(label: String, at: Vector2) -> Button:
+	var button := Button.new()
+	button.text = label
+	button.position = at
+	button.size = Vector2(92, 32)
+	button.add_theme_font_size_override("font_size", 13)
+	ButtonStyle.apply(button)
+	return button
+
+
+func _frame_box() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(1, 1, 1, 1)
+	style.set_border_width_all(4)
+	style.border_color = Color(0, 0, 0, 1)
+	return style
+
+
+func _open_hand_choice(item: ItemData, anchor: Button) -> void:
+	_choice_item = item
+	_choice_root.visible = true
+	if PlayerState.can_wield_offhand(item):
+		_choice_off.disabled = false
+		ButtonStyle.apply(_choice_off)
+	else:
+		ButtonStyle.apply_blocked(_choice_off)
+	var rect := anchor.get_global_rect()
+	var pos := rect.position + Vector2(rect.size.x + 6.0, 0)
+	if pos.x + _choice_panel.size.x > 628.0:
+		pos.x = rect.position.x - _choice_panel.size.x - 6.0
+	if pos.y + _choice_panel.size.y > 348.0:
+		pos.y = 348.0 - _choice_panel.size.y
+	_choice_panel.position = pos
+	_hide_tip()
+
+
+func _close_hand_choice() -> void:
+	_choice_item = null
+	if _choice_root != null:
+		_choice_root.visible = false
+
+
+func _choose_main() -> void:
+	var item := _choice_item
+	_close_hand_choice()
+	if item != null:
+		PlayerState.equip_to(item, ItemData.Slot.WEAPON)
+
+
+func _choose_offhand() -> void:
+	var item := _choice_item
+	_close_hand_choice()
+	if item != null:
+		PlayerState.equip_to(item, ItemData.Slot.OFFHAND)
+
+
 func _show_tip(item: ItemData) -> void:
-	var tip := $HoverTip
-	var label := $HoverTip/Label as RichTextLabel
-	label.text = _tip_text(item)
+	if item.slot == ItemData.Slot.WEAPON and not item.two_handed:
+		_show_two_tips(item)
+		return
+	if _tip_off != null:
+		_tip_off.visible = false
+	_place_one($HoverTip, _tip_text(item))
+
+
+func _show_two_tips(item: ItemData) -> void:
+	var main_tip := $HoverTip as Panel
+	var main_label := main_tip.get_node("Label") as RichTextLabel
+	var off_label := _tip_off.get_node("Label") as RichTextLabel
+	main_label.text = _hand_tip(item, ItemData.Slot.WEAPON)
+	off_label.text = _hand_tip(item, ItemData.Slot.OFFHAND)
+	var main_size := _tip_size(main_label)
+	var off_size := _tip_size(off_label)
+	main_tip.size = main_size
+	_tip_off.size = off_size
+	main_tip.visible = true
+	_tip_off.visible = true
+	var mouse := get_viewport().get_mouse_position()
+	var gap := 6.0
+	var total := main_size.x + gap + off_size.x
+	var origin := mouse + Vector2(14, 18)
+	if origin.x + total > 628.0:
+		origin.x = mouse.x - total - 8.0
+	var height := maxf(main_size.y, off_size.y)
+	if origin.y + height > 348.0:
+		origin.y = mouse.y - height - 8.0
+	if origin.x < 4.0:
+		origin.x = 4.0
+	if origin.y < 4.0:
+		origin.y = 4.0
+	main_tip.position = origin
+	_tip_off.position = origin + Vector2(main_size.x + gap, 0)
+
+
+func _place_one(tip: Panel, text: String) -> void:
+	var label := tip.get_node("Label") as RichTextLabel
+	label.text = text
 	tip.visible = true
-	var text_size := label.get_minimum_size() + Vector2(16, 12)
-	if text_size.x < 88.0:
-		text_size.x = 88.0
+	var text_size := _tip_size(label)
 	tip.size = text_size
 	var pos := get_viewport().get_mouse_position() + Vector2(14, 18)
 	if pos.x + text_size.x > 628.0:
@@ -264,6 +402,24 @@ func _show_tip(item: ItemData) -> void:
 	if pos.y + text_size.y > 348.0:
 		pos.y = get_viewport().get_mouse_position().y - text_size.y - 8.0
 	tip.position = pos
+
+
+func _tip_size(label: RichTextLabel) -> Vector2:
+	var text_size := label.get_minimum_size() + Vector2(16, 12)
+	if text_size.x < 96.0:
+		text_size.x = 96.0
+	return text_size
+
+
+func _hand_tip(item: ItemData, slot: ItemData.Slot) -> String:
+	var title := "Main" if slot == ItemData.Slot.WEAPON else "Off-hand"
+	var text := "%s\n%s\n%s" % [title, item.display_name, item.bonus_text()]
+	var equipped := PlayerState.item_in_slot(slot)
+	var other: ItemData = null if equipped == null or equipped == item else equipped
+	var delta := _delta_line(item, other, true)
+	if delta != "":
+		text += "\n" + delta
+	return text
 
 
 func _tip_text(item: ItemData) -> String:
@@ -299,10 +455,10 @@ func _loss_line(removed: ItemData) -> String:
 		var color := "#1b7f34" if diff > 0 else "#c0392b"
 		var sign := "+" if diff > 0 else ""
 		parts.append("[color=%s]%s%d %s[/color]" % [color, sign, diff, names[index]])
-	return " ".join(parts)
+	return "\n".join(parts)
 
 
-func _delta_line(item: ItemData, other: ItemData) -> String:
+func _delta_line(item: ItemData, other: ItemData, line_break: bool = false) -> String:
 	var parts: PackedStringArray = []
 	var fields: Array[String] = ["health_bonus", "melee_bonus", "bolt_bonus"]
 	var names: Array[String] = ["Health", "Melee", "Bolt"]
@@ -315,12 +471,16 @@ func _delta_line(item: ItemData, other: ItemData) -> String:
 		var color := "#1b7f34" if diff > 0 else "#c0392b"
 		var sign := "+" if diff > 0 else ""
 		parts.append("[color=%s]%s%d %s[/color]" % [color, sign, diff, names[index]])
+	if line_break:
+		return "\n".join(parts)
 	return " ".join(parts)
 
 
 func _hide_tip() -> void:
 	if has_node("HoverTip"):
 		$HoverTip.visible = false
+	if _tip_off != null:
+		_tip_off.visible = false
 
 
 func _show_item_icon(button: Button, item: ItemData) -> void:
