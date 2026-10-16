@@ -67,7 +67,7 @@ func _add_icon(button: Button) -> void:
 	icon.offset_left = 8
 	icon.offset_top = 6
 	icon.offset_right = -8
-	icon.offset_bottom = -16
+	icon.offset_bottom = -28
 	icon.hide()
 
 
@@ -177,7 +177,10 @@ func _refresh_gear() -> void:
 	for index in _slot_buttons.size():
 		var item := PlayerState.item_in_slot(_slot_kinds[index])
 		var caption := _slot_buttons[index].get_node("Caption") as Label
-		caption.text = _slot_captions[index]
+		if item == null:
+			caption.text = _slot_captions[index]
+		else:
+			caption.text = item.bonus_text()
 		_show_item_icon(_slot_buttons[index], item)
 	for index in _bag_buttons.size():
 		var caption := _bag_buttons[index].get_node("Caption") as Label
@@ -185,7 +188,7 @@ func _refresh_gear() -> void:
 		var item: ItemData = null
 		if index < PlayerState.inventory.size():
 			item = PlayerState.inventory[index]
-			caption.text = item.display_name
+			caption.text = "%s\n%s" % [item.display_name, item.bonus_text()]
 		else:
 			caption.text = ""
 		_show_item_icon(_bag_buttons[index], item)

@@ -21,6 +21,16 @@ func slot_title() -> String:
 			return "Accessory"
 
 
+func bonus_text() -> String:
+	if health_bonus != 0:
+		return "Health +%d" % health_bonus
+	if melee_bonus != 0:
+		return "Melee +%d" % melee_bonus
+	if bolt_bonus != 0:
+		return "Bolt +%d" % bolt_bonus
+	return ""
+
+
 func summary() -> String:
 	var bonus := ""
 	if health_bonus != 0:

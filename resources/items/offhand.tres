@@ -8,4 +8,4 @@ script = ExtResource("1_item")
 display_name = "Shield"
 icon = ExtResource("2_icon")
 slot = 5
-melee_bonus = 3
+health_bonus = 10

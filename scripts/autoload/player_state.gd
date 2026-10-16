@@ -22,13 +22,13 @@ func _ready() -> void:
 
 
 func start_run() -> void:
-	weapon = null
+	weapon = SWORD
 	armor = null
 	accessory = null
 	helmet = null
 	boots = null
 	offhand = null
-	inventory = [SWORD, ARMOR, CHARM]
+	inventory = [ARMOR, CHARM]
 	current_health = max_health()
 	changed.emit()
 
