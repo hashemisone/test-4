@@ -3,6 +3,8 @@ extends Control
 
 func _ready() -> void:
 	get_tree().paused = false
+	ButtonStyle.apply($Panel/Play)
+	ButtonStyle.apply($Panel/Quit)
 	$Panel/Play.pressed.connect(_on_play)
 	$Panel/Quit.pressed.connect(_on_quit)
 

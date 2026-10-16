@@ -26,8 +26,6 @@ var _slot_buttons: Array[Button] = []
 var _slot_kinds: Array[ItemData.Slot] = []
 var _slot_captions: Array[String] = []
 var _bag_buttons: Array[Button] = []
-var _tab_idle: StyleBoxFlat
-var _tab_on: StyleBoxFlat
 
 
 func _ready() -> void:
@@ -45,23 +43,16 @@ func _ready() -> void:
 		slot_button.pressed.connect(_equip_from_bag.bind(index))
 	for button in _slot_buttons:
 		_add_icon(button)
+		ButtonStyle.apply(button)
 	for button in _bag_buttons:
 		_add_icon(button)
-	_tab_idle = _make_tab_style(Color(1, 1, 1, 1))
-	_tab_on = _make_tab_style(Color(0.12, 0.12, 0.12, 1))
+		ButtonStyle.apply(button)
+	ButtonStyle.apply(gear_button)
 	gear_button.pressed.connect(toggle_gear)
 	character_tab_button.pressed.connect(_show_character_tab)
 	inventory_tab_button.pressed.connect(_show_inventory_tab)
 	PlayerState.changed.connect(_refresh_gear)
 	_apply_open_state()
-
-
-func _make_tab_style(fill: Color) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = fill
-	style.set_border_width_all(3)
-	style.border_color = Color(0, 0, 0, 1)
-	return style
 
 
 func _add_icon(button: Button) -> void:
@@ -171,16 +162,10 @@ func _apply_tab() -> void:
 
 
 func _paint_tab(button: Button, active: bool) -> void:
-	var style := _tab_on if active else _tab_idle
-	if style == null:
-		return
-	for state in ["normal", "hover", "pressed", "focus", "disabled"]:
-		button.add_theme_stylebox_override(state, style)
-	var font := Color(1, 1, 1, 1) if active else Color(0, 0, 0, 1)
-	button.add_theme_color_override("font_color", font)
-	button.add_theme_color_override("font_hover_color", font)
-	button.add_theme_color_override("font_pressed_color", font)
-	button.add_theme_color_override("font_focus_color", font)
+	if active:
+		ButtonStyle.apply_selected(button)
+	else:
+		ButtonStyle.apply(button)
 
 
 func _refresh_gear() -> void:
