@@ -1,7 +1,7 @@
 extends Resource
 class_name ItemData
 
-enum Slot { WEAPON, ARMOR, ACCESSORY, HELMET, BOOTS, OFFHAND }
+enum Slot { WEAPON, ARMOR, ACCESSORY, HELMET, BOOTS, OFFHAND, CAPE, PANTS, BRACELET, GLOVES }
 enum Rarity { COMMON, UNCOMMON }
 
 @export var display_name: String = ""

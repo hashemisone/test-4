@@ -41,12 +41,16 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	get_tree().paused = false
 	_bind_slot($GearPanel/CharacterPage/HelmetButton, ItemData.Slot.HELMET, "helmet")
-	_bind_slot($GearPanel/CharacterPage/SwordButton, ItemData.Slot.WEAPON, "sword")
-	_bind_slot($GearPanel/CharacterPage/BootsButton, ItemData.Slot.BOOTS, "boots")
-	_bind_slot($GearPanel/CharacterPage/ArmorButton, ItemData.Slot.ARMOR, "armor")
-	_bind_slot($GearPanel/CharacterPage/OffhandButton, ItemData.Slot.OFFHAND, "sword/\nshield")
 	_bind_slot($GearPanel/CharacterPage/TrinketButton, ItemData.Slot.ACCESSORY, "trinket")
-	for index in 9:
+	_bind_slot($GearPanel/CharacterPage/ArmorButton, ItemData.Slot.ARMOR, "armor")
+	_bind_slot($GearPanel/CharacterPage/CapeButton, ItemData.Slot.CAPE, "cape")
+	_bind_slot($GearPanel/CharacterPage/BraceletButton, ItemData.Slot.BRACELET, "bracelet")
+	_bind_slot($GearPanel/CharacterPage/PantsButton, ItemData.Slot.PANTS, "pants")
+	_bind_slot($GearPanel/CharacterPage/GlovesButton, ItemData.Slot.GLOVES, "gloves")
+	_bind_slot($GearPanel/CharacterPage/SwordButton, ItemData.Slot.WEAPON, "main\nhand")
+	_bind_slot($GearPanel/CharacterPage/BootsButton, ItemData.Slot.BOOTS, "boots")
+	_bind_slot($GearPanel/CharacterPage/OffhandButton, ItemData.Slot.OFFHAND, "off\nhand")
+	for index in 16:
 		var slot_button := get_node("GearPanel/InventoryPage/Slot%d" % index) as Button
 		_bag_buttons.append(slot_button)
 		slot_button.pressed.connect(_equip_from_bag.bind(index))

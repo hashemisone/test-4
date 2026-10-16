@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1_item"]
+[ext_resource type="Texture2D" path="res://art/items/pants.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+display_name = "Pants"
+icon = ExtResource("2_icon")
+slot = 7
+rarity = 1
+health_min = 13
+health_max = 16

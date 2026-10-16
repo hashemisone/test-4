@@ -13,6 +13,10 @@ const FAMILIES: Array = [
 	["res://resources/items/boots.tres", "res://resources/items/boots_uncommon.tres"],
 	["res://resources/items/offhand.tres", "res://resources/items/offhand_uncommon.tres"],
 	["res://resources/items/charm.tres", "res://resources/items/charm_uncommon.tres"],
+	["res://resources/items/cape.tres", "res://resources/items/cape_uncommon.tres"],
+	["res://resources/items/pants.tres", "res://resources/items/pants_uncommon.tres"],
+	["res://resources/items/bracelet.tres", "res://resources/items/bracelet_uncommon.tres"],
+	["res://resources/items/gloves.tres", "res://resources/items/gloves_uncommon.tres"],
 ]
 
 

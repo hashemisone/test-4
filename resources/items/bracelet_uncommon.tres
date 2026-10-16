@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1_item"]
+[ext_resource type="Texture2D" path="res://art/items/bracelet.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+display_name = "Bracelet"
+icon = ExtResource("2_icon")
+slot = 8
+rarity = 1
+health_min = 9
+health_max = 12

@@ -9,6 +9,10 @@ const CHARM := preload("res://resources/items/charm.tres")
 const HELMET := preload("res://resources/items/helmet.tres")
 const BOOTS := preload("res://resources/items/boots.tres")
 const SHIELD := preload("res://resources/items/offhand.tres")
+const CAPE := preload("res://resources/items/cape.tres")
+const PANTS := preload("res://resources/items/pants.tres")
+const BRACELET := preload("res://resources/items/bracelet.tres")
+const GLOVES := preload("res://resources/items/gloves.tres")
 const GREATSWORD := preload("res://resources/items/greatsword.tres")
 const SPARE_SWORD := preload("res://resources/items/sword_b.tres")
 
@@ -19,6 +23,10 @@ var accessory: ItemData
 var helmet: ItemData
 var boots: ItemData
 var offhand: ItemData
+var cape: ItemData
+var pants: ItemData
+var bracelet: ItemData
+var gloves: ItemData
 var current_health := 100
 
 
@@ -33,6 +41,10 @@ func start_run() -> void:
 	helmet = HELMET.roll_copy()
 	boots = BOOTS.roll_copy()
 	offhand = SHIELD.roll_copy()
+	cape = CAPE.roll_copy()
+	pants = PANTS.roll_copy()
+	bracelet = BRACELET.roll_copy()
+	gloves = GLOVES.roll_copy()
 	inventory = []
 	inventory.append(GREATSWORD.roll_copy())
 	inventory.append(SPARE_SWORD.roll_copy())
@@ -56,7 +68,7 @@ func owns(item: ItemData) -> bool:
 	if item == null:
 		return false
 	var kind := item.kind_id()
-	for held in [weapon, armor, accessory, helmet, boots, offhand]:
+	for held in [weapon, armor, accessory, helmet, boots, offhand, cape, pants, bracelet, gloves]:
 		if _same_kind(held, item, kind):
 			return true
 	for held in inventory:
@@ -80,7 +92,7 @@ func can_wield_offhand(item: ItemData) -> bool:
 
 
 func collect(item: ItemData) -> bool:
-	if item == null or inventory.size() >= 9:
+	if item == null or inventory.size() >= 16:
 		return false
 	inventory.append(item)
 	changed.emit()
@@ -165,8 +177,18 @@ func item_in_slot(slot: ItemData.Slot) -> ItemData:
 			return helmet
 		ItemData.Slot.BOOTS:
 			return boots
-		_:
+		ItemData.Slot.OFFHAND:
 			return offhand
+		ItemData.Slot.CAPE:
+			return cape
+		ItemData.Slot.PANTS:
+			return pants
+		ItemData.Slot.BRACELET:
+			return bracelet
+		ItemData.Slot.GLOVES:
+			return gloves
+		_:
+			return null
 
 
 func _set_slot(slot: ItemData.Slot, item: ItemData) -> void:
@@ -181,13 +203,21 @@ func _set_slot(slot: ItemData.Slot, item: ItemData) -> void:
 			helmet = item
 		ItemData.Slot.BOOTS:
 			boots = item
-		_:
+		ItemData.Slot.OFFHAND:
 			offhand = item
+		ItemData.Slot.CAPE:
+			cape = item
+		ItemData.Slot.PANTS:
+			pants = item
+		ItemData.Slot.BRACELET:
+			bracelet = item
+		ItemData.Slot.GLOVES:
+			gloves = item
 
 
 func _bonus(property: String) -> int:
 	var total := 0
-	for item in [weapon, armor, accessory, helmet, boots, offhand]:
+	for item in [weapon, armor, accessory, helmet, boots, offhand, cape, pants, bracelet, gloves]:
 		if item != null:
 			total += int(item.get(property))
 	return total
