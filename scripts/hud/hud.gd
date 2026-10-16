@@ -1,6 +1,10 @@
 extends CanvasLayer
 
+const HOVER_DELAY := 0.4
+
 var gear_open := false
+var _hover_button: Button
+var _hover_time := 0.0
 var character_tab := true
 var goblin_health := 30
 var goblin_max_health := 30
@@ -67,7 +71,7 @@ func _add_icon(button: Button) -> void:
 	icon.offset_left = 8
 	icon.offset_top = 6
 	icon.offset_right = -8
-	icon.offset_bottom = -28
+	icon.offset_bottom = -18
 	icon.hide()
 
 
@@ -177,10 +181,8 @@ func _refresh_gear() -> void:
 	for index in _slot_buttons.size():
 		var item := PlayerState.item_in_slot(_slot_kinds[index])
 		var caption := _slot_buttons[index].get_node("Caption") as Label
-		if item == null:
-			caption.text = _slot_captions[index]
-		else:
-			caption.text = item.bonus_text()
+		caption.text = _slot_captions[index]
+		_slot_buttons[index].set_meta("bonus", item.bonus_text() if item != null else "")
 		_show_item_icon(_slot_buttons[index], item)
 	for index in _bag_buttons.size():
 		var caption := _bag_buttons[index].get_node("Caption") as Label
@@ -188,10 +190,66 @@ func _refresh_gear() -> void:
 		var item: ItemData = null
 		if index < PlayerState.inventory.size():
 			item = PlayerState.inventory[index]
-			caption.text = "%s\n%s" % [item.display_name, item.bonus_text()]
+			caption.text = item.display_name
 		else:
 			caption.text = ""
+		_bag_buttons[index].set_meta("bonus", item.bonus_text() if item != null else "")
 		_show_item_icon(_bag_buttons[index], item)
+
+
+func _process(delta: float) -> void:
+	if not gear_open:
+		_hover_button = null
+		_hover_time = 0.0
+		_hide_tip()
+		return
+	var hovered := _button_under_mouse()
+	if hovered != _hover_button:
+		_hover_button = hovered
+		_hover_time = 0.0
+		_hide_tip()
+	if _hover_button == null:
+		return
+	var bonus := str(_hover_button.get_meta("bonus", ""))
+	if bonus == "":
+		return
+	_hover_time += delta
+	if _hover_time >= HOVER_DELAY:
+		_show_tip(bonus)
+
+
+func _button_under_mouse() -> Button:
+	for button in _slot_buttons:
+		if _contains_mouse(button):
+			return button
+	for button in _bag_buttons:
+		if button.visible and _contains_mouse(button):
+			return button
+	return null
+
+
+func _contains_mouse(button: Button) -> bool:
+	return button.get_global_rect().has_point(button.get_global_mouse_position())
+
+
+func _show_tip(text: String) -> void:
+	var tip := $HoverTip
+	var label := $HoverTip/Label as Label
+	label.text = text
+	tip.visible = true
+	var text_size := label.get_minimum_size() + Vector2(16, 10)
+	tip.size = text_size
+	var pos := get_viewport().get_mouse_position() + Vector2(14, 18)
+	if pos.x + text_size.x > 628.0:
+		pos.x = get_viewport().get_mouse_position().x - text_size.x - 8.0
+	if pos.y + text_size.y > 348.0:
+		pos.y = get_viewport().get_mouse_position().y - text_size.y - 8.0
+	tip.position = pos
+
+
+func _hide_tip() -> void:
+	if has_node("HoverTip"):
+		$HoverTip.visible = false
 
 
 func _show_item_icon(button: Button, item: ItemData) -> void:
