@@ -45,6 +45,22 @@ func bolt_damage() -> int:
 	return BASE_STATS.bolt_damage + _bonus("bolt_bonus")
 
 
+func owns(item: ItemData) -> bool:
+	if item == null:
+		return false
+	if inventory.has(item):
+		return true
+	return item_in_slot(item.slot) == item
+
+
+func collect(item: ItemData) -> bool:
+	if item == null or owns(item) or inventory.size() >= 9:
+		return false
+	inventory.append(item)
+	changed.emit()
+	return true
+
+
 func refill() -> void:
 	current_health = max_health()
 	changed.emit()

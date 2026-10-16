@@ -9,7 +9,9 @@ const MAX_FALL := 900.0
 const ATTACK_RANGE := 50.0
 const ATTACK_DAMAGE := 8
 const ATTACK_COOLDOWN := 0.9
+const PICKUP_SCENE := preload("res://scenes/pickup/pickup.tscn")
 
+@export var drop: ItemData
 @export var max_health := 30
 var health := 30
 
@@ -57,8 +59,19 @@ func take_damage(amount: int) -> void:
 	if health == 0:
 		alive = false
 		died.emit()
+		_drop_loot()
 		queue_free()
 		return
 	sprite.modulate = Color(1.0, 0.5, 0.45)
 	var flash := create_tween()
 	flash.tween_property(sprite, "modulate", Color.WHITE, 0.12)
+
+
+func _drop_loot() -> void:
+	if drop == null or PlayerState.owns(drop):
+		return
+	var pickup: Node = PICKUP_SCENE.instantiate()
+	pickup.set("item", drop)
+	var at := global_position + Vector2(0, -18)
+	get_parent().add_child(pickup)
+	pickup.global_position = at
