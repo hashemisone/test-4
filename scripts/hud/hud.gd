@@ -448,10 +448,12 @@ func _hand_tip(item: ItemData, slot: ItemData.Slot) -> String:
 	var title := "Main" if slot == ItemData.Slot.WEAPON else "Off-hand"
 	var text := "%s\n%s\n%s" % [title, item.display_name, item.bonus_text()]
 	var equipped := PlayerState.item_in_slot(slot)
-	if equipped == null or equipped == item:
+	if equipped == item:
+		return text
+	if equipped == null and slot != ItemData.Slot.OFFHAND:
 		return text
 	var worn := PlayerState.weapon == item or PlayerState.offhand == item
-	var delta := _delta_line(item, equipped, true, worn)
+	var delta := _delta_line(item, equipped, true, worn and equipped != null, equipped == null)
 	if delta != "":
 		text += "\n" + delta
 	return text
@@ -460,7 +462,11 @@ func _hand_tip(item: ItemData, slot: ItemData.Slot) -> String:
 func _tip_text(item: ItemData) -> String:
 	var text := "%s\n%s" % [item.display_name, item.bonus_text()]
 	var equipped := PlayerState.item_in_slot(item.slot)
-	if equipped != null and equipped != item:
+	if item.slot == ItemData.Slot.OFFHAND and equipped == null:
+		var gain := _delta_line(item, null, false, false, true)
+		if gain != "":
+			text += "\n" + gain
+	elif equipped != null and equipped != item:
 		var delta := _delta_line(item, equipped)
 		if delta != "":
 			text += "\n" + delta
@@ -492,15 +498,17 @@ func _loss_line(removed: ItemData) -> String:
 	return "\n".join(parts)
 
 
-func _delta_line(item: ItemData, other: ItemData, line_break: bool = false, losses_only: bool = false) -> String:
-	if other == null:
+func _delta_line(item: ItemData, other: ItemData, line_break: bool = false, losses_only: bool = false, against_empty: bool = false) -> String:
+	if other == null and not against_empty:
 		return ""
 	var parts: PackedStringArray = []
 	var fields: Array[String] = ["health_bonus", "melee_bonus", "bolt_bonus"]
 	var names: Array[String] = ["Health", "Melee", "Bolt"]
 	for index in fields.size():
 		var now: int = int(item.get(fields[index]))
-		var was: int = int(other.get(fields[index]))
+		var was := 0
+		if other != null:
+			was = int(other.get(fields[index]))
 		var diff := now - was
 		if diff == 0 or (losses_only and diff > 0):
 			continue
