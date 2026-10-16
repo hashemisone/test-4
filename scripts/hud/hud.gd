@@ -2,7 +2,9 @@ extends CanvasLayer
 
 const HOVER_DELAY := 0.4
 
-var gear_open := false
+enum PauseView { CLOSED, MENU, SHEET }
+
+var pause_view := PauseView.CLOSED
 var _hover_button: Button
 var _hover_time := 0.0
 var character_tab := true
@@ -62,8 +64,14 @@ func _ready() -> void:
 		ButtonStyle.apply(button)
 	ButtonStyle.apply(gear_button)
 	gear_button.pressed.connect(toggle_gear)
-	character_tab_button.pressed.connect(_show_character_tab)
-	inventory_tab_button.pressed.connect(_show_inventory_tab)
+	ButtonStyle.apply($BackButton)
+	$BackButton.pressed.connect(_back_to_menu)
+	for menu_button in [$PauseMenu/Resume, $PauseMenu/Character, $PauseMenu/Inventory, $PauseMenu/Quit]:
+		ButtonStyle.apply(menu_button)
+	$PauseMenu/Resume.pressed.connect(_resume)
+	$PauseMenu/Character.pressed.connect(_open_character)
+	$PauseMenu/Inventory.pressed.connect(_open_inventory)
+	$PauseMenu/Quit.pressed.connect(_quit_run)
 	PlayerState.changed.connect(_refresh_gear)
 	_add_icon($Potion1)
 	_add_icon($Potion2)
@@ -142,18 +150,38 @@ func show_status(message: String) -> void:
 
 
 func toggle_gear() -> void:
-	gear_open = not gear_open
+	if pause_view == PauseView.CLOSED:
+		pause_view = PauseView.MENU
+	else:
+		pause_view = PauseView.CLOSED
 	_apply_open_state()
 
 
-func _show_character_tab() -> void:
+func _resume() -> void:
+	pause_view = PauseView.CLOSED
+	_apply_open_state()
+
+
+func _open_character() -> void:
 	character_tab = true
-	_apply_tab()
+	pause_view = PauseView.SHEET
+	_apply_open_state()
 
 
-func _show_inventory_tab() -> void:
+func _open_inventory() -> void:
 	character_tab = false
-	_apply_tab()
+	pause_view = PauseView.SHEET
+	_apply_open_state()
+
+
+func _back_to_menu() -> void:
+	pause_view = PauseView.MENU
+	_apply_open_state()
+
+
+func _quit_run() -> void:
+	get_tree().paused = false
+	get_tree().change_scene_to_file("res://scenes/menu.tscn")
 
 
 func _unequip_slot(slot: ItemData.Slot) -> void:
@@ -180,12 +208,15 @@ func _equip_from_bag(index: int) -> void:
 
 
 func _apply_open_state() -> void:
-	dimmer.visible = gear_open
-	gear_panel.visible = gear_open
-	character_tab_button.visible = gear_open
-	inventory_tab_button.visible = gear_open
-	gear_button.text = "Close" if gear_open else "Gear"
-	get_tree().paused = gear_open
+	var open := pause_view != PauseView.CLOSED
+	dimmer.visible = open
+	$PauseMenu.visible = pause_view == PauseView.MENU
+	gear_panel.visible = pause_view == PauseView.SHEET
+	$BackButton.visible = pause_view == PauseView.SHEET
+	character_tab_button.visible = false
+	inventory_tab_button.visible = false
+	gear_button.text = "Close" if open else "Menu"
+	get_tree().paused = open
 	_apply_tab()
 	_refresh_gear()
 	_refresh_enemies()
@@ -255,7 +286,7 @@ func _set_tip_item(button: Button, item: ItemData) -> void:
 
 
 func _process(delta: float) -> void:
-	if not gear_open or (_choice_root != null and _choice_root.visible):
+	if pause_view != PauseView.SHEET or (_choice_root != null and _choice_root.visible):
 		_hover_button = null
 		_hover_time = 0.0
 		_hide_tip()
