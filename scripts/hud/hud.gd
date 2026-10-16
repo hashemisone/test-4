@@ -455,7 +455,7 @@ func _hand_tip(item: ItemData, slot: ItemData.Slot) -> String:
 	if equipped == null and slot != ItemData.Slot.OFFHAND:
 		return text
 	var worn := PlayerState.weapon == item or PlayerState.offhand == item
-	var delta := _delta_line(item, equipped, true, worn and equipped != null, equipped == null)
+	var delta := _delta_line(item, equipped, worn and equipped != null, equipped == null)
 	if delta != "":
 		text += "\n" + delta
 	return text
@@ -465,7 +465,7 @@ func _tip_text(item: ItemData) -> String:
 	var text := "%s\n%s" % [item.display_name, item.bonus_text()]
 	var equipped := PlayerState.item_in_slot(item.slot)
 	if item.slot == ItemData.Slot.OFFHAND and equipped == null:
-		var gain := _delta_line(item, null, false, false, true)
+		var gain := _delta_line(item, null, false, true)
 		if gain != "":
 			text += "\n" + gain
 	elif equipped != null and equipped != item:
@@ -500,13 +500,13 @@ func _loss_line(removed: ItemData) -> String:
 	return "\n".join(parts)
 
 
-func _delta_line(item: ItemData, other: ItemData, line_break: bool = false, losses_only: bool = false, against_empty: bool = false) -> String:
+func _delta_line(item: ItemData, other: ItemData, losses_only: bool = false, against_empty: bool = false) -> String:
 	if other == null and not against_empty:
 		return ""
 	var parts: PackedStringArray = []
 	var fields: Array[String] = ["health_bonus", "melee_bonus", "bolt_bonus"]
 	var names: Array[String] = ["Health", "Melee", "Bolt"]
-	for index in fields.size():
+	for index in _stat_order(item):
 		var now: int = int(item.get(fields[index]))
 		var was := 0
 		if other != null:
@@ -517,9 +517,20 @@ func _delta_line(item: ItemData, other: ItemData, line_break: bool = false, loss
 		var color := "#1b7f34" if diff > 0 else "#c0392b"
 		var sign := "+" if diff > 0 else ""
 		parts.append("[color=%s]%s%d %s[/color]" % [color, sign, diff, names[index]])
-	if line_break:
-		return "\n".join(parts)
-	return " ".join(parts)
+	return "\n".join(parts)
+
+
+func _stat_order(item: ItemData) -> Array[int]:
+	var primary := 0
+	if item.melee_bonus != 0:
+		primary = 1
+	elif item.bolt_bonus != 0:
+		primary = 2
+	var order: Array[int] = [primary]
+	for index in 3:
+		if index != primary:
+			order.append(index)
+	return order
 
 
 func _hide_tip() -> void:
