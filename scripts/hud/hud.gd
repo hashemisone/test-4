@@ -163,6 +163,9 @@ func _apply_tab() -> void:
 	inventory_page.visible = not character_tab
 	_paint_tab(character_tab_button, character_tab)
 	_paint_tab(inventory_tab_button, not character_tab)
+	_hover_button = null
+	_hover_time = 0.0
+	_hide_tip()
 
 
 func _paint_tab(button: Button, active: bool) -> void:
@@ -229,11 +232,9 @@ func _process(delta: float) -> void:
 
 
 func _button_under_mouse() -> Button:
-	for button in _slot_buttons:
-		if _contains_mouse(button):
-			return button
-	for button in _bag_buttons:
-		if button.visible and _contains_mouse(button):
+	var buttons: Array[Button] = _slot_buttons if character_tab else _bag_buttons
+	for button in buttons:
+		if button.is_visible_in_tree() and _contains_mouse(button):
 			return button
 	return null
 
