@@ -269,23 +269,31 @@ func _show_tip(item: ItemData) -> void:
 func _tip_text(item: ItemData) -> String:
 	var body := "%s\n%s" % [item.display_name, item.bonus_text()]
 	var equipped := PlayerState.item_in_slot(item.slot)
-	if equipped == null:
+	var removed := _offhand_removed_by(item)
+	if equipped == null and removed == null:
 		return body
-	var other: ItemData = null if equipped == item else equipped
-	var delta := _delta_line(item, other)
+	var other: ItemData = null if equipped == null or equipped == item else equipped
+	var delta := _delta_line(item, other, removed)
 	if delta == "":
 		return body
 	return "%s\n%s" % [body, delta]
 
 
-func _delta_line(item: ItemData, other: ItemData) -> String:
+func _offhand_removed_by(item: ItemData) -> ItemData:
+	if not item.two_handed or PlayerState.item_in_slot(item.slot) == item:
+		return null
+	return PlayerState.item_in_slot(ItemData.Slot.OFFHAND)
+
+
+func _delta_line(item: ItemData, other: ItemData, removed: ItemData = null) -> String:
 	var parts: PackedStringArray = []
 	var fields: Array[String] = ["health_bonus", "melee_bonus", "bolt_bonus"]
 	var names: Array[String] = ["Health", "Melee", "Bolt"]
 	for index in fields.size():
 		var now: int = int(item.get(fields[index]))
 		var was: int = int(other.get(fields[index])) if other != null else 0
-		var diff := now - was
+		var lost: int = int(removed.get(fields[index])) if removed != null else 0
+		var diff := now - was - lost
 		if diff == 0:
 			continue
 		var color := "#1b7f34" if diff > 0 else "#c0392b"
