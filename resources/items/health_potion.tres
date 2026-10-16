@@ -8,5 +8,4 @@ script = ExtResource("1_item")
 display_name = "Health Potion"
 icon = ExtResource("2_icon")
 heal_amount = 40
-buff_health = 25
 buff_seconds = 30.0

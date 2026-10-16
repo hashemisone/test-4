@@ -91,8 +91,8 @@ func is_potion() -> bool:
 func bonus_text() -> String:
 	if heal_amount > 0:
 		var text := "Heal %d" % heal_amount
-		if buff_health > 0:
-			text += "\nFull: +%d Health for %ds" % [buff_health, int(buff_seconds)]
+		if buff_seconds > 0.0:
+			text += "\nLeftover lasts %ds" % int(buff_seconds)
 		return text
 	if buff_melee > 0:
 		return "Attack +%d for %ds" % [buff_melee, int(buff_seconds)]

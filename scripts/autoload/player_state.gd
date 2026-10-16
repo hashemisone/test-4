@@ -121,12 +121,14 @@ func use_quick_potion(index: int) -> void:
 
 func _apply_potion(item: ItemData) -> void:
 	if item.heal_amount > 0:
-		if current_health >= max_health() and item.buff_health > 0:
-			bonus_health = item.buff_health
+		var missing := maxi(max_health() - current_health, 0)
+		var applied := mini(item.heal_amount, missing)
+		var leftover := item.heal_amount - applied
+		current_health += applied
+		if leftover > 0:
+			bonus_health += leftover
 			bonus_health_left = item.buff_seconds
-			current_health = max_health()
-		else:
-			current_health = mini(current_health + item.heal_amount, max_health())
+			current_health += leftover
 	if item.buff_melee > 0:
 		bonus_melee = item.buff_melee
 		bonus_melee_left = item.buff_seconds
