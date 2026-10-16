@@ -6,6 +6,8 @@ const BASE_STATS := preload("res://resources/stats/player_stats.tres")
 const SWORD := preload("res://resources/items/sword.tres")
 const ARMOR := preload("res://resources/items/armor.tres")
 const PANTS := preload("res://resources/items/pants.tres")
+const HEALTH_POTION := preload("res://resources/items/health_potion.tres")
+const ATTACK_POTION := preload("res://resources/items/attack_potion.tres")
 
 var inventory: Array[ItemData] = []
 var weapon: ItemData
@@ -23,6 +25,8 @@ var bonus_health := 0
 var bonus_health_left := 0.0
 var bonus_melee := 0
 var bonus_melee_left := 0.0
+var quick_health: ItemData
+var quick_attack: ItemData
 
 
 func _ready() -> void:
@@ -45,6 +49,10 @@ func start_run() -> void:
 	bonus_health_left = 0.0
 	bonus_melee = 0
 	bonus_melee_left = 0.0
+	quick_health = null
+	quick_attack = null
+	inventory.append(HEALTH_POTION.roll_copy())
+	inventory.append(ATTACK_POTION.roll_copy())
 	current_health = max_health()
 	changed.emit()
 
@@ -80,10 +88,38 @@ func _process(delta: float) -> void:
 		changed.emit()
 
 
-func use_potion(item: ItemData) -> void:
+func quick_potion(index: int) -> ItemData:
+	return quick_health if index == 0 else quick_attack
+
+
+func equip_quick_potion(item: ItemData) -> void:
 	if item == null or not item.is_potion() or not inventory.has(item):
 		return
+	var index := 0 if item.heal_amount > 0 else 1
+	var previous := quick_potion(index)
+	if index == 0:
+		quick_health = item
+	else:
+		quick_attack = item
 	inventory.erase(item)
+	if previous != null and previous != item:
+		inventory.append(previous)
+	changed.emit()
+
+
+func use_quick_potion(index: int) -> void:
+	var item := quick_potion(index)
+	if item == null:
+		return
+	if index == 0:
+		quick_health = null
+	else:
+		quick_attack = null
+	_apply_potion(item)
+	changed.emit()
+
+
+func _apply_potion(item: ItemData) -> void:
 	if item.heal_amount > 0:
 		if current_health >= max_health() and item.buff_health > 0:
 			bonus_health = item.buff_health
@@ -94,7 +130,6 @@ func use_potion(item: ItemData) -> void:
 	if item.buff_melee > 0:
 		bonus_melee = item.buff_melee
 		bonus_melee_left = item.buff_seconds
-	changed.emit()
 
 
 func bolt_damage() -> int:

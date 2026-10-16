@@ -65,6 +65,12 @@ func _ready() -> void:
 	character_tab_button.pressed.connect(_show_character_tab)
 	inventory_tab_button.pressed.connect(_show_inventory_tab)
 	PlayerState.changed.connect(_refresh_gear)
+	_add_icon($Potion1)
+	_add_icon($Potion2)
+	ButtonStyle.apply($Potion1)
+	ButtonStyle.apply($Potion2)
+	$Potion1.pressed.connect(_use_quick_potion.bind(0))
+	$Potion2.pressed.connect(_use_quick_potion.bind(1))
 	_build_hand_choice()
 	_apply_open_state()
 
@@ -97,6 +103,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if event.is_action_pressed("toggle_stats"):
 		toggle_gear()
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("potion_1"):
+		_use_quick_potion(0)
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("potion_2"):
+		_use_quick_potion(1)
 		get_viewport().set_input_as_handled()
 
 
@@ -154,7 +166,7 @@ func _equip_from_bag(index: int) -> void:
 	var item := PlayerState.inventory[index]
 	if item.is_potion():
 		_close_hand_choice()
-		PlayerState.use_potion(item)
+		PlayerState.equip_quick_potion(item)
 		return
 	if item.slot == ItemData.Slot.WEAPON and not item.two_handed:
 		if not PlayerState.can_wield_offhand(item):
@@ -206,6 +218,7 @@ func _refresh_gear() -> void:
 	melee_label.text = "Melee %d" % PlayerState.melee_damage()
 	bolt_label.text = "Bolt %d" % PlayerState.bolt_damage()
 	_refresh_buffs()
+	_refresh_quick_potions()
 	var blocks_offhand := PlayerState.blocks_offhand()
 	for index in _slot_buttons.size():
 		var item := PlayerState.item_in_slot(_slot_kinds[index])
@@ -363,6 +376,20 @@ func _choose_offhand() -> void:
 	_close_hand_choice()
 	if item != null:
 		PlayerState.equip_to(item, ItemData.Slot.OFFHAND)
+
+
+func _use_quick_potion(index: int) -> void:
+	PlayerState.use_quick_potion(index)
+
+
+func _refresh_quick_potions() -> void:
+	var buttons: Array[Button] = [$Potion1, $Potion2]
+	var keys: Array[String] = ["1", "2"]
+	for index in buttons.size():
+		var item := PlayerState.quick_potion(index)
+		var caption := buttons[index].get_node("Caption") as Label
+		caption.text = item.display_name if item != null else keys[index]
+		_show_item_icon(buttons[index], item)
 
 
 func _refresh_buffs() -> void:
