@@ -184,6 +184,7 @@ func _refresh_gear() -> void:
 		caption.text = _slot_captions[index]
 		_set_tip_item(_slot_buttons[index], item)
 		_show_item_icon(_slot_buttons[index], item)
+		ButtonStyle.apply_item(_slot_buttons[index], item != null and item.rarity == ItemData.Rarity.UNCOMMON)
 	for index in _bag_buttons.size():
 		var caption := _bag_buttons[index].get_node("Caption") as Label
 		caption.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
@@ -195,6 +196,7 @@ func _refresh_gear() -> void:
 			caption.text = ""
 		_set_tip_item(_bag_buttons[index], item)
 		_show_item_icon(_bag_buttons[index], item)
+		ButtonStyle.apply_item(_bag_buttons[index], item != null and item.rarity == ItemData.Rarity.UNCOMMON)
 
 
 func _set_tip_item(button: Button, item: ItemData) -> void:

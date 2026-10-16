@@ -7,8 +7,8 @@
 [ext_resource type="PackedScene" path="res://scenes/hud/hud.tscn" id="5_hud"]
 [ext_resource type="PackedScene" path="res://scenes/exit/exit.tscn" id="6_exit"]
 [ext_resource type="PackedScene" path="res://scenes/enemy/shooter.tscn" id="7_shooter"]
-[ext_resource type="Resource" path="res://resources/items/boots.tres" id="8_boots"]
-[ext_resource type="Resource" path="res://resources/items/offhand.tres" id="9_offhand"]
+[ext_resource type="Resource" path="res://resources/items/boots_uncommon.tres" id="8_boots"]
+[ext_resource type="Resource" path="res://resources/items/offhand_uncommon.tres" id="9_offhand"]
 
 [node name="Room2" type="Node2D"]
 goal_text = "Kill both, then enter the exit"

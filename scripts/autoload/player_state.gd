@@ -6,6 +6,9 @@ const BASE_STATS := preload("res://resources/stats/player_stats.tres")
 const SWORD := preload("res://resources/items/sword.tres")
 const ARMOR := preload("res://resources/items/armor.tres")
 const CHARM := preload("res://resources/items/charm.tres")
+const HELMET := preload("res://resources/items/helmet.tres")
+const BOOTS := preload("res://resources/items/boots.tres")
+const SHIELD := preload("res://resources/items/offhand.tres")
 
 var inventory: Array[ItemData] = []
 var weapon: ItemData
@@ -23,12 +26,12 @@ func _ready() -> void:
 
 func start_run() -> void:
 	weapon = SWORD
-	armor = null
-	accessory = null
-	helmet = null
-	boots = null
-	offhand = null
-	inventory = [ARMOR, CHARM]
+	armor = ARMOR
+	accessory = CHARM
+	helmet = HELMET
+	boots = BOOTS
+	offhand = SHIELD
+	inventory = []
 	current_health = max_health()
 	changed.emit()
 

@@ -3,7 +3,14 @@ class_name ButtonStyle
 
 
 static func apply(button: Button) -> void:
-	_assign(button, Color(1, 1, 1, 1), Color(0.75, 0.86, 0.9, 1), Color(0.58, 0.72, 0.76, 1), Color(0, 0, 0, 1))
+	apply_item(button, false)
+
+
+static func apply_item(button: Button, uncommon: bool) -> void:
+	if uncommon:
+		_assign(button, Color(0.94, 0.88, 0.74, 1), Color(0.86, 0.78, 0.6, 1), Color(0.76, 0.66, 0.46, 1), Color(0, 0, 0, 1))
+	else:
+		_assign(button, Color(1, 1, 1, 1), Color(0.75, 0.86, 0.9, 1), Color(0.58, 0.72, 0.76, 1), Color(0, 0, 0, 1))
 
 
 static func apply_selected(button: Button) -> void:
