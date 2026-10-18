@@ -1,0 +1,38 @@
+[gd_scene format=3 uid="uid://h1j3l5n7p9r2t"]
+
+[ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
+[ext_resource type="PackedScene" path="res://scenes/level/scroll_room.tscn" id="2_room"]
+[ext_resource type="PackedScene" path="res://scenes/enemy/dummy.tscn" id="3_dummy"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="4_player"]
+[ext_resource type="PackedScene" path="res://scenes/hud/hud.tscn" id="5_hud"]
+[ext_resource type="PackedScene" path="res://scenes/exit/exit.tscn" id="6_exit"]
+[ext_resource type="PackedScene" path="res://scenes/enemy/shooter.tscn" id="7_shooter"]
+
+[node name="Room3" type="Node2D"]
+goal_text = "Clear the hall, then enter the exit"
+script = ExtResource("1_main")
+
+[node name="ScrollRoom" parent="." instance=ExtResource("2_room")]
+
+[node name="Goblin1" parent="." instance=ExtResource("3_dummy")]
+position = Vector2(460, 320)
+
+[node name="Shooter1" parent="." instance=ExtResource("7_shooter")]
+position = Vector2(860, 320)
+
+[node name="Goblin2" parent="." instance=ExtResource("3_dummy")]
+position = Vector2(1120, 320)
+
+[node name="Shooter2" parent="." instance=ExtResource("7_shooter")]
+position = Vector2(1460, 320)
+
+[node name="Goblin3" parent="." instance=ExtResource("3_dummy")]
+position = Vector2(1680, 320)
+
+[node name="Player" parent="." instance=ExtResource("4_player")]
+position = Vector2(96, 320)
+
+[node name="Exit" parent="." instance=ExtResource("6_exit")]
+position = Vector2(1840, 240)
+
+[node name="HUD" parent="." instance=ExtResource("5_hud")]

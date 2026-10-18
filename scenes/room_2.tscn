@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" path="res://scenes/hud/hud.tscn" id="5_hud"]
 [ext_resource type="PackedScene" path="res://scenes/exit/exit.tscn" id="6_exit"]
 [ext_resource type="PackedScene" path="res://scenes/enemy/shooter.tscn" id="7_shooter"]
+[ext_resource type="PackedScene" path="res://scenes/room_3.tscn" id="8_room3"]
 
 [node name="Room2" type="Node2D"]
 goal_text = "Kill both, then enter the exit"
@@ -25,5 +26,6 @@ position = Vector2(96, 320)
 
 [node name="Exit" parent="." instance=ExtResource("6_exit")]
 position = Vector2(580, 240)
+next_scene = ExtResource("8_room3")
 
 [node name="HUD" parent="." instance=ExtResource("5_hud")]

@@ -6,24 +6,30 @@ extends Node2D
 func _ready() -> void:
 	var player := $Player
 	var hud := $HUD
-	var dummy := $Dummy
 	player.health_changed.connect(hud.show_player)
 	player.died.connect(func() -> void:
 		hud.show_status("Down. Try again.")
 	)
-	dummy.health_changed.connect(hud.show_target)
-	dummy.died.connect(_on_enemy_died)
 	hud.show_player(player.health, PlayerState.max_health())
 	hud.show_offense(PlayerState.melee_damage(), PlayerState.bolt_damage())
-	hud.show_target(dummy.health, dummy.max_health)
 	hud.show_status(goal_text)
-	var shooter := get_node_or_null("Shooter")
-	if shooter == null:
+	var saw_goblin := false
+	var saw_shooter := false
+	for node in get_tree().get_nodes_in_group("enemy"):
+		if node.get_parent() != self:
+			continue
+		node.died.connect(_on_enemy_died)
+		if node.get_node_or_null("Muzzle") != null:
+			if not saw_shooter:
+				node.health_changed.connect(hud.show_shooter)
+				hud.show_shooter(node.health, node.max_health)
+				saw_shooter = true
+		elif not saw_goblin:
+			node.health_changed.connect(hud.show_target)
+			hud.show_target(node.health, node.max_health)
+			saw_goblin = true
+	if not saw_shooter:
 		hud.hide_shooter()
-		return
-	shooter.health_changed.connect(hud.show_shooter)
-	shooter.died.connect(_on_enemy_died)
-	hud.show_shooter(shooter.health, shooter.max_health)
 
 
 func track_enemy(enemy: Node, kind: String) -> void:
