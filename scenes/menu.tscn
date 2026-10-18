@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/menu/menu.gd" id="1_menu"]
 [ext_resource type="PackedScene" path="res://scenes/ui/settings.tscn" id="2_settings"]
+[ext_resource type="Script" path="res://scripts/ui/cheat_menu.gd" id="3_cheat"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
 bg_color = Color(1, 1, 1, 1)
@@ -41,9 +42,9 @@ color = Color(0.07, 0.06, 0.06, 1)
 [node name="Panel" type="Panel" parent="."]
 layout_mode = 0
 offset_left = 170.0
-offset_top = 48.0
+offset_top = 4.0
 offset_right = 470.0
-offset_bottom = 348.0
+offset_bottom = 356.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
 [node name="Title" type="Label" parent="Panel"]
@@ -108,6 +109,15 @@ offset_right = 230.0
 offset_bottom = 268.0
 theme_override_font_sizes/font_size = 16
 text = "Settings"
+
+[node name="CheatButton" type="Button" parent="Panel"]
+layout_mode = 0
+offset_left = 70.0
+offset_top = 280.0
+offset_right = 230.0
+offset_bottom = 316.0
+theme_override_font_sizes/font_size = 16
+text = "Cheat"
 
 [node name="Levels" type="Panel" parent="."]
 visible = false
@@ -193,3 +203,45 @@ theme_override_font_sizes/font_size = 14
 text = "5"
 
 [node name="Settings" parent="." instance=ExtResource("2_settings")]
+
+[node name="CheatBack" type="Button" parent="."]
+visible = false
+layout_mode = 0
+offset_left = 16.0
+offset_top = 8.0
+offset_right = 116.0
+offset_bottom = 36.0
+theme_override_font_sizes/font_size = 14
+text = "Back"
+
+[node name="CheatPage" type="Panel" parent="."]
+visible = false
+offset_left = 16.0
+offset_top = 42.0
+offset_right = 624.0
+offset_bottom = 354.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+script = ExtResource("3_cheat")
+
+[node name="Path" type="Label" parent="CheatPage"]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 10.0
+offset_right = 592.0
+offset_bottom = 34.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 16
+text = "Cheat"
+
+[node name="Scroll" type="ScrollContainer" parent="CheatPage"]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 42.0
+offset_right = 592.0
+offset_bottom = 300.0
+horizontal_scroll_mode = 0
+
+[node name="List" type="VBoxContainer" parent="CheatPage/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4

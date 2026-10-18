@@ -7,6 +7,8 @@ func _ready() -> void:
 	ButtonStyle.apply($Panel/Level)
 	ButtonStyle.apply($Panel/Quit)
 	ButtonStyle.apply($Panel/SettingsButton)
+	ButtonStyle.apply($Panel/CheatButton)
+	ButtonStyle.apply($CheatBack)
 	ButtonStyle.apply($Levels/Back)
 	ButtonStyle.apply($Levels/Test)
 	for number in 5:
@@ -15,6 +17,8 @@ func _ready() -> void:
 	$Panel/Level.pressed.connect(_show_levels)
 	$Panel/Quit.pressed.connect(_on_quit)
 	$Panel/SettingsButton.pressed.connect(_show_settings)
+	$Panel/CheatButton.pressed.connect(_show_cheat)
+	$CheatBack.pressed.connect(_show_title)
 	$Settings.closed.connect(_show_title)
 	$Levels/Back.pressed.connect(_show_title)
 	$Levels/Test.pressed.connect(_on_play)
@@ -29,6 +33,17 @@ func _show_title() -> void:
 	$Panel.visible = true
 	$Levels.visible = false
 	$Settings.visible = false
+	$CheatPage.visible = false
+	$CheatBack.visible = false
+
+
+func _show_cheat() -> void:
+	$Panel.visible = false
+	$Levels.visible = false
+	$Settings.visible = false
+	$CheatPage.visible = true
+	$CheatBack.visible = true
+	$CheatPage.reset_folder()
 
 
 func _show_settings() -> void:

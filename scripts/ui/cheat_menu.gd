@@ -11,6 +11,11 @@ func _ready() -> void:
 	_show_folder()
 
 
+func reset_folder() -> void:
+	_path = PackedStringArray()
+	_show_folder()
+
+
 func _show_folder() -> void:
 	$Path.text = "Cheat" if _path.is_empty() else " / ".join(_path)
 	var box := $Scroll/List
@@ -181,7 +186,10 @@ func _add_one_of_each() -> void:
 
 
 func _spawn(packed: PackedScene, kind: String) -> void:
-	var room := get_parent().get_parent()
+	var hud := get_parent()
+	if hud == null or hud.get_parent() == null:
+		return
+	var room := hud.get_parent()
 	var player := room.get_node_or_null("Player") as Node2D
 	if player == null:
 		return
