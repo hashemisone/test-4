@@ -23,11 +23,14 @@ func _show_folder() -> void:
 		box.add_child(_button("Enemy", _enter.bind("Enemy")))
 		box.add_child(_button("Equipment", _enter.bind("Equipment")))
 		box.add_child(_button("Potion", _enter.bind("Potion")))
+		box.add_child(_button("Room", _enter.bind("Room")))
 		return
 	if _path[0] == "Enemy":
 		_show_enemies(box)
 	elif _path[0] == "Equipment":
 		_show_equipment(box)
+	elif _path[0] == "Room":
+		_show_rooms(box)
 	else:
 		_show_potions(box)
 
@@ -49,6 +52,17 @@ func _show_equipment(box: VBoxContainer) -> void:
 	var rarity := ItemData.Rarity.COMMON if _path[1] == "Common" else ItemData.Rarity.UNCOMMON
 	for item in _sorted_items(false, rarity):
 		box.add_child(_button(item.display_name, _give.bind(item)))
+
+
+func _show_rooms(box: VBoxContainer) -> void:
+	box.add_child(_button("Room 1", _go_room.bind("res://scenes/main.tscn")))
+	box.add_child(_button("Room 2", _go_room.bind("res://scenes/room_2.tscn")))
+	box.add_child(_button("Room 3", _go_room.bind("res://scenes/room_3.tscn")))
+
+
+func _go_room(path: String) -> void:
+	get_tree().paused = false
+	get_tree().call_deferred("change_scene_to_file", path)
 
 
 func _show_potions(box: VBoxContainer) -> void:
