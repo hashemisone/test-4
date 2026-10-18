@@ -139,29 +139,26 @@ func _button(title: String, action: Callable) -> Button:
 
 
 func _give(template: ItemData) -> void:
-	if PlayerState.inventory.size() >= 16:
+	if not PlayerState.add_item(template.roll_copy()):
 		_status("Inventory full.")
-		return
-	PlayerState.inventory.append(template.roll_copy())
-	PlayerState.changed.emit()
 
 
 func _add_one_of_each() -> void:
 	var added := 0
 	for rarity in [ItemData.Rarity.COMMON, ItemData.Rarity.UNCOMMON]:
 		for template in _sorted_items(false, rarity):
-			if PlayerState.inventory.size() >= 16:
-				break
 			if PlayerState.owns(template):
 				continue
-			PlayerState.inventory.append(template.roll_copy())
+			if not PlayerState.add_item(template.roll_copy()):
+				_status("Inventory full.")
+				return
 			added += 1
 	for template in _sorted_items(true, ItemData.Rarity.COMMON):
-		if PlayerState.inventory.size() >= 16:
-			break
 		if PlayerState.owns(template):
 			continue
-		PlayerState.inventory.append(template.roll_copy())
+		if not PlayerState.add_item(template.roll_copy()):
+			_status("Inventory full.")
+			return
 		added += 1
 	if added > 0:
 		PlayerState.changed.emit()

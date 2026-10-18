@@ -23,6 +23,7 @@ enum Rarity { COMMON, UNCOMMON }
 @export var buff_health: int = 0
 @export var buff_melee: int = 0
 @export var buff_seconds: float = 0.0
+var stack := 1
 
 
 func roll_copy() -> ItemData:

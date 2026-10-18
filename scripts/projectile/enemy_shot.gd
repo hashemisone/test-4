@@ -17,7 +17,7 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	position.x += direction * speed * delta
 	life -= delta
-	if life <= 0.0 or global_position.x < -48.0 or global_position.x > 688.0:
+	if life <= 0.0:
 		queue_free()
 
 

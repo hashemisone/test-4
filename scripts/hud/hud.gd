@@ -288,7 +288,7 @@ func _refresh_gear() -> void:
 		var item: ItemData = null
 		if index < PlayerState.inventory.size():
 			item = PlayerState.inventory[index]
-			caption.text = item.display_name
+			caption.text = _stack_name(item)
 		else:
 			caption.text = ""
 		_set_tip_item(_bag_buttons[index], item)
@@ -428,6 +428,12 @@ func _choose_offhand() -> void:
 		PlayerState.equip_to(item, ItemData.Slot.OFFHAND)
 
 
+func _stack_name(item: ItemData) -> String:
+	if item.is_potion() and item.stack > 1:
+		return "%s\nx%d" % [item.display_name, item.stack]
+	return item.display_name
+
+
 func _use_quick_potion(index: int) -> void:
 	PlayerState.use_quick_potion(index)
 
@@ -438,7 +444,7 @@ func _refresh_quick_potions() -> void:
 	for index in buttons.size():
 		var item := PlayerState.quick_potion(index)
 		var caption := buttons[index].get_node("Caption") as Label
-		caption.text = item.display_name if item != null else keys[index]
+		caption.text = _stack_name(item) if item != null else keys[index]
 		_show_item_icon(buttons[index], item)
 
 

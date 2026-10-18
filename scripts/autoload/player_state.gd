@@ -51,8 +51,8 @@ func start_run() -> void:
 	bonus_melee_left = 0.0
 	quick_health = null
 	quick_attack = null
-	inventory.append(HEALTH_POTION.roll_copy())
-	inventory.append(ATTACK_POTION.roll_copy())
+	add_item(HEALTH_POTION.roll_copy())
+	add_item(ATTACK_POTION.roll_copy())
 	current_health = max_health()
 	changed.emit()
 
@@ -96,14 +96,17 @@ func equip_quick_potion(item: ItemData) -> void:
 	if item == null or not item.is_potion() or not inventory.has(item):
 		return
 	var index := 0 if item.heal_amount > 0 else 1
-	var previous := quick_potion(index)
-	if index == 0:
-		quick_health = item
-	else:
-		quick_attack = item
+	var current := quick_potion(index)
 	inventory.erase(item)
-	if previous != null and previous != item:
-		inventory.append(previous)
+	if current != null and current.kind_id() == item.kind_id():
+		current.stack += item.stack
+	else:
+		if index == 0:
+			quick_health = item
+		else:
+			quick_attack = item
+		if current != null:
+			add_item(current)
 	changed.emit()
 
 
@@ -111,12 +114,35 @@ func use_quick_potion(index: int) -> void:
 	var item := quick_potion(index)
 	if item == null:
 		return
-	if index == 0:
-		quick_health = null
-	else:
-		quick_attack = null
+	item.stack -= 1
+	if item.stack <= 0:
+		if index == 0:
+			quick_health = null
+		else:
+			quick_attack = null
 	_apply_potion(item)
 	changed.emit()
+
+
+func add_item(item: ItemData) -> bool:
+	if item == null:
+		return false
+	if item.is_potion():
+		for held in inventory:
+			if held.is_potion() and held.kind_id() == item.kind_id():
+				held.stack += item.stack
+				changed.emit()
+				return true
+		var equipped := quick_health if item.heal_amount > 0 else quick_attack
+		if equipped != null and equipped.kind_id() == item.kind_id():
+			equipped.stack += item.stack
+			changed.emit()
+			return true
+	if inventory.size() >= 16:
+		return false
+	inventory.append(item)
+	changed.emit()
+	return true
 
 
 func _apply_potion(item: ItemData) -> void:
@@ -166,11 +192,7 @@ func can_wield_offhand(item: ItemData) -> bool:
 
 
 func collect(item: ItemData) -> bool:
-	if item == null or inventory.size() >= 16:
-		return false
-	inventory.append(item)
-	changed.emit()
-	return true
+	return add_item(item)
 
 
 func refill() -> void:
