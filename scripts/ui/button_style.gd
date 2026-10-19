@@ -6,11 +6,12 @@ static func apply(button: Button) -> void:
 	apply_item(button, false)
 
 
-static func apply_item(button: Button, uncommon: bool) -> void:
+static func apply_item(button: Button, uncommon: bool, kept: bool = false) -> void:
+	var border := Color(0.12, 0.38, 0.82, 1) if kept else Color(0, 0, 0, 1)
 	if uncommon:
-		_assign(button, Color(0.94, 0.88, 0.74, 1), Color(0.86, 0.78, 0.6, 1), Color(0.76, 0.66, 0.46, 1), Color(0, 0, 0, 1))
+		_assign(button, Color(0.94, 0.88, 0.74, 1), Color(0.86, 0.78, 0.6, 1), Color(0.76, 0.66, 0.46, 1), Color(0, 0, 0, 1), border)
 	else:
-		_assign(button, Color(1, 1, 1, 1), Color(0.75, 0.86, 0.9, 1), Color(0.58, 0.72, 0.76, 1), Color(0, 0, 0, 1))
+		_assign(button, Color(1, 1, 1, 1), Color(0.75, 0.86, 0.9, 1), Color(0.58, 0.72, 0.76, 1), Color(0, 0, 0, 1), border)
 
 
 static func apply_blocked(button: Button) -> void:
@@ -36,20 +37,20 @@ static func apply_selected(button: Button) -> void:
 		button.add_theme_color_override(key, font)
 
 
-static func _assign(button: Button, normal_fill: Color, hover_fill: Color, pressed_fill: Color, font: Color) -> void:
+static func _assign(button: Button, normal_fill: Color, hover_fill: Color, pressed_fill: Color, font: Color, border: Color) -> void:
 	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	button.add_theme_stylebox_override("normal", _box(normal_fill))
-	button.add_theme_stylebox_override("hover", _box(hover_fill))
-	button.add_theme_stylebox_override("pressed", _box(pressed_fill))
-	button.add_theme_stylebox_override("focus", _box(hover_fill))
-	button.add_theme_stylebox_override("disabled", _box(normal_fill))
+	button.add_theme_stylebox_override("normal", _box(normal_fill, border))
+	button.add_theme_stylebox_override("hover", _box(hover_fill, border))
+	button.add_theme_stylebox_override("pressed", _box(pressed_fill, border))
+	button.add_theme_stylebox_override("focus", _box(hover_fill, border))
+	button.add_theme_stylebox_override("disabled", _box(normal_fill, border))
 	for key in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color", "font_disabled_color"]:
 		button.add_theme_color_override(key, font)
 
 
-static func _box(fill: Color) -> StyleBoxFlat:
+static func _box(fill: Color, border: Color = Color(0, 0, 0, 1)) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
 	style.bg_color = fill
 	style.set_border_width_all(3)
-	style.border_color = Color(0, 0, 0, 1)
+	style.border_color = border
 	return style

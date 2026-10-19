@@ -25,6 +25,7 @@ enum Rarity { COMMON, UNCOMMON }
 @export var buff_seconds: float = 0.0
 @export var coin_amount: int = 0
 var stack := 1
+var permanent := false
 
 
 func roll_copy() -> ItemData:
@@ -39,6 +40,7 @@ func _copy_with(lowest: bool) -> ItemData:
 	var copy := duplicate() as ItemData
 	if copy.source_id == "":
 		copy.source_id = resource_path
+	copy.permanent = false
 	if lowest:
 		copy._apply_floor()
 	else:
@@ -92,6 +94,10 @@ func is_potion() -> bool:
 
 func is_coin() -> bool:
 	return coin_amount > 0
+
+
+func durability_label() -> String:
+	return "Kept" if permanent else "Run"
 
 
 func bonus_text() -> String:

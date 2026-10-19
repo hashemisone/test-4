@@ -4,6 +4,7 @@ class_name Loot
 # Index matches ItemData.Rarity. A later rarity keeps a smaller base weight.
 const RARITY_WEIGHTS: Array[int] = [100, 25]
 const LEVEL_STEP := 15
+const PERMANENT_CHANCE := 10
 
 const FAMILIES: Array = [
 	["res://resources/items/sword.tres", "res://resources/items/sword_uncommon.tres"],
@@ -31,6 +32,8 @@ static func roll(enemy_level: int) -> ItemData:
 	var copy := template.roll_copy()
 	if copy.is_coin():
 		copy.coin_amount = randi_range(1, 3)
+	elif randi() % PERMANENT_CHANCE == 0:
+		copy.permanent = true
 	return copy
 
 

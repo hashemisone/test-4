@@ -31,35 +31,93 @@ var coins := 0
 var return_to_levels := false
 
 const COIN_SAVE := "user://coins.json"
+const GEAR_SAVE := "user://permanent.json"
 
 
 func _ready() -> void:
 	_load_coins()
+	_load_permanent()
 	start_run()
 
 
 func start_run() -> void:
-	weapon = SWORD.lowest_copy()
-	armor = ARMOR.lowest_copy()
-	accessory = null
-	helmet = null
-	boots = null
-	offhand = null
-	cape = null
-	pants = PANTS.lowest_copy()
-	bracelet = null
-	gloves = null
-	inventory = []
+	end_run()
+	_equip_starter(ItemData.Slot.WEAPON, SWORD)
+	_equip_starter(ItemData.Slot.ARMOR, ARMOR)
+	_equip_starter(ItemData.Slot.PANTS, PANTS)
+	_add_starter_potion(HEALTH_POTION)
+	_add_starter_potion(ATTACK_POTION)
+	current_health = max_health()
+	changed.emit()
+
+
+func end_run() -> void:
+	for slot in _all_slots():
+		var worn := item_in_slot(slot)
+		if worn != null and not worn.permanent:
+			_set_slot(slot, null)
+	if quick_health != null and not quick_health.permanent:
+		quick_health = null
+	if quick_attack != null and not quick_attack.permanent:
+		quick_attack = null
+	var kept: Array[ItemData] = []
+	for item in inventory:
+		if item.permanent:
+			kept.append(item)
+	inventory = kept
 	bonus_health = 0
 	bonus_health_left = 0.0
 	bonus_melee = 0
 	bonus_melee_left = 0.0
-	quick_health = null
-	quick_attack = null
-	add_item(HEALTH_POTION.roll_copy())
-	add_item(ATTACK_POTION.roll_copy())
-	current_health = max_health()
+	current_health = mini(current_health, max_health())
+	_save_permanent()
 	changed.emit()
+
+
+func _equip_starter(slot: ItemData.Slot, template: ItemData) -> void:
+	if item_in_slot(slot) != null:
+		return
+	var item := template.lowest_copy()
+	item.permanent = false
+	_set_slot(slot, item)
+
+
+func _add_starter_potion(template: ItemData) -> void:
+	if _holds_kind(template.kind_id()):
+		return
+	var item := template.roll_copy()
+	item.permanent = false
+	add_item(item)
+
+
+func _holds_kind(kind: String) -> bool:
+	for slot in _all_slots():
+		var worn := item_in_slot(slot)
+		if worn != null and worn.kind_id() == kind:
+			return true
+	for item in inventory:
+		if item.kind_id() == kind:
+			return true
+	if quick_health != null and quick_health.kind_id() == kind:
+		return true
+	if quick_attack != null and quick_attack.kind_id() == kind:
+		return true
+	return false
+
+
+func _all_slots() -> Array[ItemData.Slot]:
+	return [
+		ItemData.Slot.WEAPON,
+		ItemData.Slot.ARMOR,
+		ItemData.Slot.ACCESSORY,
+		ItemData.Slot.HELMET,
+		ItemData.Slot.BOOTS,
+		ItemData.Slot.OFFHAND,
+		ItemData.Slot.CAPE,
+		ItemData.Slot.PANTS,
+		ItemData.Slot.BRACELET,
+		ItemData.Slot.GLOVES,
+	]
 
 
 func max_health() -> int:
@@ -103,7 +161,7 @@ func equip_quick_potion(item: ItemData) -> void:
 	var index := 0 if item.heal_amount > 0 else 1
 	var current := quick_potion(index)
 	inventory.erase(item)
-	if current != null and current.kind_id() == item.kind_id():
+	if current != null and current.kind_id() == item.kind_id() and current.permanent == item.permanent:
 		current.stack += item.stack
 	else:
 		if index == 0:
@@ -112,6 +170,7 @@ func equip_quick_potion(item: ItemData) -> void:
 			quick_attack = item
 		if current != null:
 			add_item(current)
+	_save_permanent()
 	changed.emit()
 
 
@@ -126,6 +185,7 @@ func use_quick_potion(index: int) -> void:
 		else:
 			quick_attack = null
 	_apply_potion(item)
+	_save_permanent()
 	changed.emit()
 
 
@@ -149,6 +209,91 @@ func _load_coins() -> void:
 		coins = maxi(int(parsed["coins"]), 0)
 
 
+func _pack_item(item: ItemData) -> Dictionary:
+	return {
+		"path": item.kind_id(),
+		"stack": item.stack,
+		"health_bonus": item.health_bonus,
+		"melee_bonus": item.melee_bonus,
+		"bolt_bonus": item.bolt_bonus,
+	}
+
+
+func _unpack_item(data: Dictionary) -> ItemData:
+	var path := str(data.get("path", ""))
+	if path == "" or not ResourceLoader.exists(path):
+		return null
+	var template := load(path) as ItemData
+	if template == null:
+		return null
+	var item := template.duplicate() as ItemData
+	item.source_id = path
+	item.permanent = true
+	item.stack = maxi(int(data.get("stack", 1)), 1)
+	item.health_bonus = int(data.get("health_bonus", item.health_bonus))
+	item.melee_bonus = int(data.get("melee_bonus", item.melee_bonus))
+	item.bolt_bonus = int(data.get("bolt_bonus", item.bolt_bonus))
+	return item
+
+
+func _save_permanent() -> void:
+	var equipped := {}
+	for slot in _all_slots():
+		var worn := item_in_slot(slot)
+		if worn != null and worn.permanent:
+			equipped[str(int(slot))] = _pack_item(worn)
+	var bag: Array = []
+	for item in inventory:
+		if item.permanent:
+			bag.append(_pack_item(item))
+	var body := {
+		"equipped": equipped,
+		"inventory": bag,
+		"quick_health": _pack_item(quick_health) if quick_health != null and quick_health.permanent else null,
+		"quick_attack": _pack_item(quick_attack) if quick_attack != null and quick_attack.permanent else null,
+	}
+	var file := FileAccess.open(GEAR_SAVE, FileAccess.WRITE)
+	if file == null:
+		return
+	file.store_string(JSON.stringify(body))
+
+
+func _load_permanent() -> void:
+	if not FileAccess.file_exists(GEAR_SAVE):
+		return
+	var file := FileAccess.open(GEAR_SAVE, FileAccess.READ)
+	if file == null:
+		return
+	var parsed = JSON.parse_string(file.get_as_text())
+	if typeof(parsed) != TYPE_DICTIONARY:
+		return
+	for slot in _all_slots():
+		_set_slot(slot, null)
+	inventory.clear()
+	quick_health = null
+	quick_attack = null
+	var equipped = parsed.get("equipped", {})
+	if typeof(equipped) == TYPE_DICTIONARY:
+		for slot in _all_slots():
+			var record = equipped.get(str(int(slot)), null)
+			if typeof(record) == TYPE_DICTIONARY:
+				_set_slot(slot, _unpack_item(record))
+	var bag = parsed.get("inventory", [])
+	if typeof(bag) == TYPE_ARRAY:
+		for record in bag:
+			if typeof(record) != TYPE_DICTIONARY:
+				continue
+			var item := _unpack_item(record)
+			if item != null and inventory.size() < 16:
+				inventory.append(item)
+	var health_record = parsed.get("quick_health", null)
+	var attack_record = parsed.get("quick_attack", null)
+	if typeof(health_record) == TYPE_DICTIONARY:
+		quick_health = _unpack_item(health_record)
+	if typeof(attack_record) == TYPE_DICTIONARY:
+		quick_attack = _unpack_item(attack_record)
+
+
 func _save_coins() -> void:
 	var file := FileAccess.open(COIN_SAVE, FileAccess.WRITE)
 	if file == null:
@@ -164,18 +309,20 @@ func add_item(item: ItemData) -> bool:
 		return true
 	if item.is_potion():
 		for held in inventory:
-			if held.is_potion() and held.kind_id() == item.kind_id():
+			if held.is_potion() and held.kind_id() == item.kind_id() and held.permanent == item.permanent:
 				held.stack += item.stack
 				changed.emit()
+				_save_permanent()
 				return true
 		var equipped := quick_health if item.heal_amount > 0 else quick_attack
-		if equipped != null and equipped.kind_id() == item.kind_id():
+		if equipped != null and equipped.kind_id() == item.kind_id() and equipped.permanent == item.permanent:
 			equipped.stack += item.stack
 			changed.emit()
 			return true
 	if inventory.size() >= 16:
 		return false
 	inventory.append(item)
+	_save_permanent()
 	changed.emit()
 	return true
 
@@ -271,6 +418,7 @@ func equip_to(item: ItemData, slot: ItemData.Slot) -> void:
 		inventory.append(held)
 	_release_offhand_weapon()
 	_shift_health(old_max)
+	_save_permanent()
 	changed.emit()
 
 
@@ -283,6 +431,7 @@ func unequip(slot: ItemData.Slot) -> void:
 	inventory.append(previous)
 	_release_offhand_weapon()
 	_shift_health(old_max)
+	_save_permanent()
 	changed.emit()
 
 

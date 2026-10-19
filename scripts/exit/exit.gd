@@ -34,4 +34,6 @@ func _on_body_entered(body: Node) -> void:
 		get_tree().call_deferred("change_scene_to_packed", next_scene)
 		return
 	get_tree().paused = false
+	PlayerState.end_run()
+	PlayerState.return_to_levels = true
 	get_tree().call_deferred("change_scene_to_file", "res://scenes/menu.tscn")

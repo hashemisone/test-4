@@ -220,6 +220,7 @@ func _open_settings() -> void:
 
 func _quit_run() -> void:
 	get_tree().paused = false
+	PlayerState.end_run()
 	PlayerState.return_to_levels = true
 	get_tree().change_scene_to_file("res://scenes/menu.tscn")
 
@@ -336,7 +337,7 @@ func _refresh_gear() -> void:
 	for index in _slot_buttons.size():
 		var item := PlayerState.item_in_slot(_slot_kinds[index])
 		var caption := _slot_buttons[index].get_node("Caption") as Label
-		caption.text = item.display_name if item != null else _slot_captions[index]
+		caption.text = _box_text(item, _slot_captions[index])
 		_set_tip_item(_slot_buttons[index], item)
 		_show_item_icon(_slot_buttons[index], item)
 		var button := _slot_buttons[index]
@@ -344,19 +345,19 @@ func _refresh_gear() -> void:
 			ButtonStyle.apply_blocked(button)
 		else:
 			button.disabled = false
-			ButtonStyle.apply_item(button, item != null and item.rarity == ItemData.Rarity.UNCOMMON)
+			ButtonStyle.apply_item(button, item != null and item.rarity == ItemData.Rarity.UNCOMMON, item != null and item.permanent)
 	for index in _bag_buttons.size():
 		var caption := _bag_buttons[index].get_node("Caption") as Label
 		caption.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
 		var item: ItemData = null
 		if index < PlayerState.inventory.size():
 			item = PlayerState.inventory[index]
-			caption.text = _stack_name(item)
+			caption.text = _box_text(item, "")
 		else:
 			caption.text = ""
 		_set_tip_item(_bag_buttons[index], item)
 		_show_item_icon(_bag_buttons[index], item)
-		ButtonStyle.apply_item(_bag_buttons[index], item != null and item.rarity == ItemData.Rarity.UNCOMMON)
+		ButtonStyle.apply_item(_bag_buttons[index], item != null and item.rarity == ItemData.Rarity.UNCOMMON, item != null and item.permanent)
 
 
 func _set_tip_item(button: Button, item: ItemData) -> void:
@@ -497,6 +498,12 @@ func _stack_name(item: ItemData) -> String:
 	return item.display_name
 
 
+func _box_text(item: ItemData, fallback: String) -> String:
+	if item == null:
+		return fallback
+	return "%s\n%s" % [_stack_name(item), item.durability_label()]
+
+
 func _use_quick_potion(index: int) -> void:
 	PlayerState.use_quick_potion(index)
 
@@ -507,8 +514,10 @@ func _refresh_quick_potions() -> void:
 	for index in buttons.size():
 		var item := PlayerState.quick_potion(index)
 		var caption := buttons[index].get_node("Caption") as Label
-		caption.text = _stack_name(item) if item != null else keys[index]
+		caption.text = _box_text(item, keys[index])
 		_show_item_icon(buttons[index], item)
+		if item != null:
+			ButtonStyle.apply_item(buttons[index], false, item.permanent)
 
 
 func _refresh_health_bar() -> void:
@@ -559,7 +568,7 @@ func _show_tip(item: ItemData) -> void:
 	if item.is_potion():
 		if _tip_off != null:
 			_tip_off.visible = false
-		_place_one($HoverTip, "%s\n%s" % [item.display_name, item.bonus_text()])
+		_place_one($HoverTip, "%s\n%s\n%s" % [item.display_name, item.bonus_text(), item.durability_label()])
 		return
 	if item.slot == ItemData.Slot.WEAPON and not item.two_handed:
 		_show_two_tips(item)
@@ -646,7 +655,7 @@ func _tip_size(label: RichTextLabel) -> Vector2:
 
 func _hand_tip(item: ItemData, slot: ItemData.Slot) -> String:
 	var title := "Main" if slot == ItemData.Slot.WEAPON else "Off-hand"
-	var text := "%s\n%s\n%s" % [title, item.display_name, item.bonus_text()]
+	var text := "%s\n%s\n%s\n%s" % [title, item.display_name, item.bonus_text(), item.durability_label()]
 	var equipped := PlayerState.item_in_slot(slot)
 	if equipped == item:
 		return text
@@ -660,7 +669,7 @@ func _hand_tip(item: ItemData, slot: ItemData.Slot) -> String:
 
 
 func _tip_text(item: ItemData) -> String:
-	var text := "%s\n%s" % [item.display_name, item.bonus_text()]
+	var text := "%s\n%s\n%s" % [item.display_name, item.bonus_text(), item.durability_label()]
 	var equipped := PlayerState.item_in_slot(item.slot)
 	var removed := _offhand_removed_by(item)
 	if equipped == null:
