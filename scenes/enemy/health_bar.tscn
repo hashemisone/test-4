@@ -1,0 +1,47 @@
+[gd_scene format=3 uid="uid://k3m8p2r6t1v4x"]
+
+[ext_resource type="Script" path="res://scripts/enemy/health_bar.gd" id="1_bar"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_enemy_health"]
+bg_color = Color(0.18, 0.05, 0.05, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 0, 0, 1)
+
+[node name="HealthBar" type="Node2D"]
+z_index = 10
+script = ExtResource("1_bar")
+
+[node name="Frame" type="Panel" parent="."]
+offset_left = -30.0
+offset_top = -104.0
+offset_right = 30.0
+offset_bottom = -88.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_enemy_health")
+
+[node name="Fill" type="ColorRect" parent="Frame"]
+offset_left = 2.0
+offset_top = 2.0
+offset_right = 58.0
+offset_bottom = 14.0
+mouse_filter = 2
+color = Color(0.78, 0.13, 0.12, 1)
+
+[node name="Value" type="Label" parent="Frame"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 9
+text = "30/30"
+horizontal_alignment = 1
+vertical_alignment = 1

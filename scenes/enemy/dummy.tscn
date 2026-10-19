@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/enemy/dummy.gd" id="1_dummy"]
 [ext_resource type="SpriteFrames" path="res://resources/enemy/dummy_frames.tres" id="2_frames"]
+[ext_resource type="PackedScene" path="res://scenes/enemy/health_bar.tscn" id="3_bar"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
 size = Vector2(34, 64)
@@ -22,3 +23,5 @@ flip_h = true
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(0, -32)
 shape = SubResource("RectangleShape2D_body")
+
+[node name="HealthBar" parent="." instance=ExtResource("3_bar")]

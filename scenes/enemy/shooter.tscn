@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/enemy/shooter.gd" id="1_shooter"]
 [ext_resource type="SpriteFrames" path="res://resources/enemy/dummy_frames.tres" id="2_frames"]
+[ext_resource type="PackedScene" path="res://scenes/enemy/health_bar.tscn" id="3_bar"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
 size = Vector2(34, 64)
@@ -25,3 +26,5 @@ shape = SubResource("RectangleShape2D_body")
 
 [node name="Muzzle" type="Marker2D" parent="."]
 position = Vector2(28, -36)
+
+[node name="HealthBar" parent="." instance=ExtResource("3_bar")]

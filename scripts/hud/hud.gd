@@ -8,11 +8,6 @@ var pause_view := PauseView.CLOSED
 var _hover_button: Button
 var _hover_time := 0.0
 var character_tab := true
-var goblin_health := 30
-var goblin_max_health := 30
-var shooter_health := 22
-var shooter_max_health := 22
-var show_shooter_row := true
 
 @onready var hint_label: Label = $HintLabel
 @onready var gear_button: Button = $GearButton
@@ -25,8 +20,6 @@ var show_shooter_row := true
 @onready var health_label: Label = $GearPanel/CharacterPage/HealthLabel
 @onready var melee_label: Label = $GearPanel/CharacterPage/MeleeLabel
 @onready var bolt_label: Label = $GearPanel/CharacterPage/BoltLabel
-@onready var goblin_label: Label = $GoblinLabel
-@onready var shooter_label: Label = $ShooterLabel
 
 var _slot_buttons: Array[Button] = []
 var _slot_kinds: Array[ItemData.Slot] = []
@@ -134,24 +127,6 @@ func show_player(_current: int, _maximum: int) -> void:
 	_refresh_gear()
 
 
-func show_target(current: int, maximum: int) -> void:
-	goblin_health = current
-	goblin_max_health = maximum
-	_refresh_enemies()
-
-
-func show_shooter(current: int, maximum: int) -> void:
-	show_shooter_row = true
-	shooter_health = current
-	shooter_max_health = maximum
-	_refresh_enemies()
-
-
-func hide_shooter() -> void:
-	show_shooter_row = false
-	_refresh_enemies()
-
-
 func show_offense(_melee: int, _bolt: int) -> void:
 	_refresh_gear()
 
@@ -251,7 +226,6 @@ func _apply_open_state() -> void:
 	get_tree().paused = open
 	_apply_tab()
 	_refresh_gear()
-	_refresh_enemies()
 
 
 func _apply_tab() -> void:
@@ -738,19 +712,3 @@ func _show_item_icon(button: Button, item: ItemData) -> void:
 		icon.show()
 	else:
 		icon.hide()
-
-
-func _refresh_enemies() -> void:
-	if goblin_label == null:
-		return
-	if goblin_health <= 0:
-		goblin_label.text = "Goblin down"
-	else:
-		goblin_label.text = "Goblin %d/%d" % [goblin_health, goblin_max_health]
-	if shooter_label == null:
-		return
-	shooter_label.visible = show_shooter_row
-	if shooter_health <= 0:
-		shooter_label.text = "Shooter down"
-	else:
-		shooter_label.text = "Shooter %d/%d" % [shooter_health, shooter_max_health]
