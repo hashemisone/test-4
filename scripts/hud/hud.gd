@@ -33,6 +33,14 @@ var _choice_item: ItemData
 var _choice_root: Control
 var _choice_panel: Panel
 var _choice_off: Button
+var _destroy_item: ItemData
+var _destroy_amount := 0
+var _destroy_shade: ColorRect
+var _destroy_menu: Panel
+var _amount_menu: Panel
+var _confirm_menu: Panel
+var _amount_edit: LineEdit
+var _dont_ask: CheckButton
 var _tip_off: Panel
 
 
@@ -53,6 +61,7 @@ func _ready() -> void:
 		var slot_button := get_node("GearPanel/InventoryPage/Slot%d" % index) as Button
 		_bag_buttons.append(slot_button)
 		slot_button.pressed.connect(_equip_from_bag.bind(index))
+		slot_button.gui_input.connect(_item_gui.bind("bag", index))
 	for button in _slot_buttons:
 		_add_icon(button)
 		ButtonStyle.apply(button)
@@ -83,6 +92,9 @@ func _ready() -> void:
 	ButtonStyle.apply($Potion2)
 	$Potion1.pressed.connect(_use_quick_potion.bind(0))
 	$Potion2.pressed.connect(_use_quick_potion.bind(1))
+	$Potion1.gui_input.connect(_item_gui.bind("potion", 0))
+	$Potion2.gui_input.connect(_item_gui.bind("potion", 1))
+	_build_destroy_ui()
 	_build_hand_choice()
 	_apply_open_state()
 
@@ -105,6 +117,7 @@ func _bind_slot(button: Button, slot: ItemData.Slot, caption: String) -> void:
 	_slot_kinds.append(slot)
 	_slot_captions.append(caption)
 	button.pressed.connect(_unequip_slot.bind(slot))
+	button.gui_input.connect(_item_gui.bind("slot", int(slot)))
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -496,6 +509,204 @@ func _stack_name(item: ItemData) -> String:
 	if item.is_potion() and item.stack > 1:
 		return "%s\nx%d" % [item.display_name, item.stack]
 	return item.display_name
+
+
+func _item_gui(event: InputEvent, kind: String, which: int) -> void:
+	if not (event is InputEventMouseButton):
+		return
+	var mouse := event as InputEventMouseButton
+	if not mouse.pressed or mouse.button_index != MOUSE_BUTTON_RIGHT:
+		return
+	var item := _clicked_item(kind, which)
+	if item == null:
+		return
+	_open_destroy(item)
+	get_viewport().set_input_as_handled()
+
+
+func _clicked_item(kind: String, which: int) -> ItemData:
+	if kind == "bag":
+		if which < 0 or which >= PlayerState.inventory.size():
+			return null
+		return PlayerState.inventory[which]
+	if kind == "potion":
+		return PlayerState.quick_potion(which)
+	return PlayerState.item_in_slot(which as ItemData.Slot)
+
+
+func _build_destroy_ui() -> void:
+	_destroy_shade = ColorRect.new()
+	_destroy_shade.color = Color(0, 0, 0, 0.25)
+	_destroy_shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_destroy_shade.visible = false
+	_destroy_shade.z_index = 40
+	_destroy_shade.gui_input.connect(_close_destroy_event)
+	add_child(_destroy_shade)
+	_destroy_menu = _small_panel()
+	var destroy := _destroy_button("Destroy")
+	destroy.pressed.connect(_click_destroy)
+	_destroy_menu.add_child(destroy)
+	_amount_menu = _small_panel()
+	var one := _destroy_button("Destroy 1")
+	one.position = Vector2(8, 8)
+	one.pressed.connect(_request_destroy.bind(1))
+	_amount_menu.add_child(one)
+	var all := _destroy_button("Destroy all")
+	all.position = Vector2(8, 46)
+	all.pressed.connect(_request_destroy_all)
+	_amount_menu.add_child(all)
+	_amount_edit = LineEdit.new()
+	_amount_edit.position = Vector2(8, 88)
+	_amount_edit.size = Vector2(86, 32)
+	_amount_edit.placeholder_text = "Number"
+	_amount_edit.add_theme_color_override("font_color", Color(0, 0, 0, 1))
+	_amount_menu.add_child(_amount_edit)
+	var ok := _destroy_button("Ok")
+	ok.position = Vector2(98, 88)
+	ok.size = Vector2(54, 32)
+	ok.pressed.connect(_request_destroy_typed)
+	_amount_menu.add_child(ok)
+	_confirm_menu = _small_panel()
+	_confirm_menu.size = Vector2(280, 168)
+	var ask := Label.new()
+	ask.position = Vector2(12, 12)
+	ask.size = Vector2(256, 28)
+	ask.text = "Are you sure?"
+	ask.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	ask.add_theme_color_override("font_color", Color(0, 0, 0, 1))
+	ask.add_theme_font_size_override("font_size", 18)
+	_confirm_menu.add_child(ask)
+	_dont_ask = CheckButton.new()
+	_dont_ask.position = Vector2(24, 48)
+	_dont_ask.size = Vector2(232, 28)
+	_dont_ask.text = "Don't ask again"
+	_dont_ask.add_theme_color_override("font_color", Color(0, 0, 0, 1))
+	_confirm_menu.add_child(_dont_ask)
+	var yes := _destroy_button("Yes")
+	yes.position = Vector2(16, 96)
+	yes.size = Vector2(116, 40)
+	yes.pressed.connect(_confirm_destroy)
+	_confirm_menu.add_child(yes)
+	var no := _destroy_button("No")
+	no.position = Vector2(148, 96)
+	no.size = Vector2(116, 40)
+	no.pressed.connect(_close_destroy)
+	_confirm_menu.add_child(no)
+
+
+func _small_panel() -> Panel:
+	var panel := Panel.new()
+	panel.visible = false
+	panel.z_index = 41
+	panel.size = Vector2(160, 128)
+	panel.add_theme_stylebox_override("panel", _menu_frame())
+	add_child(panel)
+	return panel
+
+
+func _menu_frame() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(1, 1, 1, 1)
+	style.set_border_width_all(3)
+	style.border_color = Color(0, 0, 0, 1)
+	return style
+
+
+func _destroy_button(title: String) -> Button:
+	var button := Button.new()
+	button.text = title
+	button.position = Vector2(8, 8)
+	button.size = Vector2(144, 32)
+	button.add_theme_font_size_override("font_size", 14)
+	ButtonStyle.apply(button)
+	return button
+
+
+func _open_destroy(item: ItemData) -> void:
+	_destroy_item = item
+	_destroy_amount = 0
+	_amount_edit.text = ""
+	_dont_ask.button_pressed = false
+	_amount_menu.visible = false
+	_confirm_menu.visible = false
+	_destroy_menu.visible = true
+	_destroy_shade.visible = true
+	_place_popup(_destroy_menu, get_viewport().get_mouse_position())
+
+
+func _click_destroy() -> void:
+	if _destroy_item == null:
+		_close_destroy()
+		return
+	if _destroy_item.stack > 1:
+		_destroy_menu.visible = false
+		_amount_menu.visible = true
+		_place_popup(_amount_menu, _destroy_menu.position)
+		return
+	_request_destroy(1)
+
+
+func _request_destroy_all() -> void:
+	if _destroy_item == null:
+		_close_destroy()
+		return
+	_request_destroy(_destroy_item.stack)
+
+
+func _request_destroy_typed() -> void:
+	var text := _amount_edit.text.strip_edges()
+	if not text.is_valid_int():
+		return
+	var amount := int(text)
+	if amount <= 0:
+		return
+	_request_destroy(amount)
+
+
+func _request_destroy(amount: int) -> void:
+	var item := _destroy_item
+	if item == null:
+		_close_destroy()
+		return
+	if item.permanent and PlayerState.confirm_destroy:
+		_destroy_amount = amount
+		_destroy_menu.visible = false
+		_amount_menu.visible = false
+		_confirm_menu.visible = true
+		_confirm_menu.position = Vector2(180, 96)
+		return
+	PlayerState.destroy_item(item, amount)
+	_close_destroy()
+
+
+func _confirm_destroy() -> void:
+	if _dont_ask.button_pressed:
+		PlayerState.set_confirm_destroy(false)
+	PlayerState.destroy_item(_destroy_item, _destroy_amount)
+	_close_destroy()
+
+
+func _place_popup(panel: Control, at: Vector2) -> void:
+	var pos := at
+	if pos.x + panel.size.x > 628.0:
+		pos.x = 628.0 - panel.size.x
+	if pos.y + panel.size.y > 348.0:
+		pos.y = 348.0 - panel.size.y
+	panel.position = pos
+
+
+func _close_destroy_event(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed:
+		_close_destroy()
+
+
+func _close_destroy() -> void:
+	_destroy_item = null
+	_destroy_amount = 0
+	_destroy_shade.visible = false
+	_destroy_menu.visible = false
+	_amount_menu.visible = false
+	_confirm_menu.visible = false
 
 
 func _use_quick_potion(index: int) -> void:

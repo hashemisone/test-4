@@ -4,6 +4,8 @@ signal closed
 
 var _home: Control
 var _keys: Control
+var _options: Control
+var _confirm_button: Button
 var _list: VBoxContainer
 var _prompt: Label
 var _listening := false
@@ -26,6 +28,7 @@ func show_home() -> void:
 	_hide_tip()
 	_home.visible = true
 	_keys.visible = false
+	_options.visible = false
 
 
 func _build() -> void:
@@ -44,15 +47,34 @@ func _build() -> void:
 	_keys.size = Vector2(560, 312)
 	_keys.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_keys)
+	_options = Control.new()
+	_options.position = Vector2(40, 24)
+	_options.size = Vector2(560, 312)
+	_options.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_options)
 	_add_title(_home, "Settings")
 	var bindings := _menu_button("Keybindings")
-	bindings.position = Vector2(180, 110)
+	bindings.position = Vector2(180, 88)
 	bindings.pressed.connect(_show_keys)
 	_home.add_child(bindings)
+	var options := _menu_button("Options")
+	options.position = Vector2(180, 140)
+	options.pressed.connect(_show_options)
+	_home.add_child(options)
 	var home_back := _menu_button("Back")
-	home_back.position = Vector2(180, 166)
+	home_back.position = Vector2(180, 192)
 	home_back.pressed.connect(_leave)
 	_home.add_child(home_back)
+	_add_title(_options, "Options")
+	_confirm_button = _menu_button("Destroy confirm: On")
+	_confirm_button.position = Vector2(130, 120)
+	_confirm_button.size = Vector2(300, 40)
+	_confirm_button.pressed.connect(_toggle_confirm)
+	_options.add_child(_confirm_button)
+	var options_back := _menu_button("Back")
+	options_back.position = Vector2(180, 192)
+	options_back.pressed.connect(show_home)
+	_options.add_child(options_back)
 	_add_title(_keys, "Keybindings")
 	var scroll := ScrollContainer.new()
 	scroll.position = Vector2(16, 52)
@@ -90,6 +112,24 @@ func _build() -> void:
 	_tip_label.add_theme_color_override("font_color", Color(0, 0, 0, 1))
 	_tip_label.add_theme_font_size_override("font_size", 13)
 	_tip.add_child(_tip_label)
+
+
+func _show_options() -> void:
+	_listening = false
+	_hide_tip()
+	_home.visible = false
+	_keys.visible = false
+	_options.visible = true
+	_refresh_confirm_button()
+
+
+func _toggle_confirm() -> void:
+	PlayerState.set_confirm_destroy(not PlayerState.confirm_destroy)
+	_refresh_confirm_button()
+
+
+func _refresh_confirm_button() -> void:
+	_confirm_button.text = "Destroy confirm: On" if PlayerState.confirm_destroy else "Destroy confirm: Off"
 
 
 func _show_keys() -> void:

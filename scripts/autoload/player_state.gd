@@ -29,13 +29,16 @@ var quick_health: ItemData
 var quick_attack: ItemData
 var coins := 0
 var return_to_levels := false
+var confirm_destroy := true
 
 const COIN_SAVE := "user://coins.json"
 const GEAR_SAVE := "user://permanent.json"
+const OPTIONS_SAVE := "user://options.json"
 
 
 func _ready() -> void:
 	_load_coins()
+	_load_options()
 	_load_permanent()
 	start_run()
 
@@ -187,6 +190,56 @@ func use_quick_potion(index: int) -> void:
 	_apply_potion(item)
 	_save_permanent()
 	changed.emit()
+
+
+func set_confirm_destroy(enabled: bool) -> void:
+	confirm_destroy = enabled
+	_save_options()
+
+
+func destroy_item(item: ItemData, amount: int) -> void:
+	if item == null:
+		return
+	var count := mini(maxi(amount, 0), item.stack)
+	if count <= 0:
+		return
+	if count >= item.stack:
+		_forget_item(item)
+	else:
+		item.stack -= count
+	if item.permanent:
+		_save_permanent()
+	changed.emit()
+
+
+func _forget_item(item: ItemData) -> void:
+	inventory.erase(item)
+	if quick_health == item:
+		quick_health = null
+	if quick_attack == item:
+		quick_attack = null
+	for slot in _all_slots():
+		if item_in_slot(slot) == item:
+			_set_slot(slot, null)
+
+
+func _load_options() -> void:
+	confirm_destroy = true
+	if not FileAccess.file_exists(OPTIONS_SAVE):
+		return
+	var file := FileAccess.open(OPTIONS_SAVE, FileAccess.READ)
+	if file == null:
+		return
+	var parsed = JSON.parse_string(file.get_as_text())
+	if typeof(parsed) == TYPE_DICTIONARY and parsed.has("confirm_destroy"):
+		confirm_destroy = bool(parsed["confirm_destroy"])
+
+
+func _save_options() -> void:
+	var file := FileAccess.open(OPTIONS_SAVE, FileAccess.WRITE)
+	if file == null:
+		return
+	file.store_string(JSON.stringify({"confirm_destroy": confirm_destroy}))
 
 
 func add_coins(amount: int) -> void:
