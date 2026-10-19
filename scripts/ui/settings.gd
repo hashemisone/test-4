@@ -7,6 +7,7 @@ var _keys: Control
 var _options: Control
 var _confirm_switch: CheckButton
 var _sell_switch: CheckButton
+var _equipped_switch: CheckButton
 var _list: VBoxContainer
 var _prompt: Label
 var _listening := false
@@ -67,42 +68,11 @@ func _build() -> void:
 	home_back.pressed.connect(_leave)
 	_home.add_child(home_back)
 	_add_title(_options, "Options")
-	var confirm_label := Label.new()
-	confirm_label.position = Vector2(80, 120)
-	confirm_label.size = Vector2(280, 32)
-	confirm_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	confirm_label.text = "Destroy confirm"
-	confirm_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	confirm_label.add_theme_color_override("font_color", Color(0, 0, 0, 1))
-	confirm_label.add_theme_font_size_override("font_size", 16)
-	_options.add_child(confirm_label)
-	_confirm_switch = CheckButton.new()
-	_confirm_switch.position = Vector2(372, 122)
-	_confirm_switch.custom_minimum_size = Vector2(24, 24)
-	_confirm_switch.size = Vector2(24, 24)
-	_confirm_switch.text = ""
-	_confirm_switch.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	_confirm_switch.toggled.connect(_on_confirm_toggled)
-	_options.add_child(_confirm_switch)
-	var sell_label := Label.new()
-	sell_label.position = Vector2(80, 164)
-	sell_label.size = Vector2(280, 32)
-	sell_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	sell_label.text = "Sell kept items"
-	sell_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	sell_label.add_theme_color_override("font_color", Color(0, 0, 0, 1))
-	sell_label.add_theme_font_size_override("font_size", 16)
-	_options.add_child(sell_label)
-	_sell_switch = CheckButton.new()
-	_sell_switch.position = Vector2(372, 166)
-	_sell_switch.custom_minimum_size = Vector2(24, 24)
-	_sell_switch.size = Vector2(24, 24)
-	_sell_switch.text = ""
-	_sell_switch.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	_sell_switch.toggled.connect(_on_sell_toggled)
-	_options.add_child(_sell_switch)
+	_confirm_switch = _add_option_row("Destroy confirm", 78, _on_confirm_toggled)
+	_sell_switch = _add_option_row("Sell kept items", 126, _on_sell_toggled)
+	_equipped_switch = _add_option_row("Sell equipped confirm", 174, _on_equipped_toggled)
 	var options_back := _menu_button("Back")
-	options_back.position = Vector2(180, 192)
+	options_back.position = Vector2(180, 232)
 	options_back.pressed.connect(show_home)
 	_options.add_child(options_back)
 	_add_title(_keys, "Keybindings")
@@ -165,9 +135,37 @@ func _on_sell_toggled(enabled: bool) -> void:
 	PlayerState.set_sell_kept(enabled)
 
 
+func _on_equipped_toggled(enabled: bool) -> void:
+	if enabled == PlayerState.confirm_sell_equipped:
+		return
+	PlayerState.set_confirm_sell_equipped(enabled)
+
+
 func _refresh_confirm_button() -> void:
 	_confirm_switch.set_pressed_no_signal(PlayerState.confirm_destroy)
 	_sell_switch.set_pressed_no_signal(PlayerState.sell_kept)
+	_equipped_switch.set_pressed_no_signal(PlayerState.confirm_sell_equipped)
+
+
+func _add_option_row(title: String, y: float, handler: Callable) -> CheckButton:
+	var label := Label.new()
+	label.position = Vector2(80, y)
+	label.size = Vector2(280, 32)
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	label.text = title
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.add_theme_color_override("font_color", Color(0, 0, 0, 1))
+	label.add_theme_font_size_override("font_size", 16)
+	_options.add_child(label)
+	var option_switch := CheckButton.new()
+	option_switch.position = Vector2(372, y + 2)
+	option_switch.custom_minimum_size = Vector2(24, 24)
+	option_switch.size = Vector2(24, 24)
+	option_switch.text = ""
+	option_switch.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	option_switch.toggled.connect(handler)
+	_options.add_child(option_switch)
+	return option_switch
 
 
 func _show_keys() -> void:

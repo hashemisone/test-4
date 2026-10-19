@@ -31,6 +31,7 @@ var coins := 0
 var return_to_levels := false
 var confirm_destroy := true
 var sell_kept := false
+var confirm_sell_equipped := true
 var pending_scene := ""
 var in_shop := false
 var shop_stock: Array[ItemData] = []
@@ -206,6 +207,11 @@ func set_sell_kept(enabled: bool) -> void:
 	_save_options()
 
 
+func set_confirm_sell_equipped(enabled: bool) -> void:
+	confirm_sell_equipped = enabled
+	_save_options()
+
+
 func roll_shop_stock() -> void:
 	shop_stock.clear()
 	var guard := 0
@@ -256,6 +262,7 @@ func _forget_item(item: ItemData) -> void:
 func _load_options() -> void:
 	confirm_destroy = true
 	sell_kept = false
+	confirm_sell_equipped = true
 	if not FileAccess.file_exists(OPTIONS_SAVE):
 		return
 	var file := FileAccess.open(OPTIONS_SAVE, FileAccess.READ)
@@ -268,6 +275,8 @@ func _load_options() -> void:
 		confirm_destroy = bool(parsed["confirm_destroy"])
 	if parsed.has("sell_kept"):
 		sell_kept = bool(parsed["sell_kept"])
+	if parsed.has("confirm_sell_equipped"):
+		confirm_sell_equipped = bool(parsed["confirm_sell_equipped"])
 
 
 func _save_options() -> void:
@@ -277,6 +286,7 @@ func _save_options() -> void:
 	file.store_string(JSON.stringify({
 		"confirm_destroy": confirm_destroy,
 		"sell_kept": sell_kept,
+		"confirm_sell_equipped": confirm_sell_equipped,
 	}))
 
 

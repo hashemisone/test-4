@@ -3,6 +3,7 @@ extends CanvasLayer
 signal hub_closed
 
 const HOVER_DELAY := 0.4
+const COIN_TEXTURE := preload("res://art/items/coin.png")
 
 @export var hub := false
 
@@ -44,9 +45,20 @@ var _dont_ask: CheckButton
 var _buy_button: Button
 var _buy_root: Control
 var _buy_buttons: Array[Button] = []
-var _sell_choice: Button
+var _sell_button: Button
+var _sell_root: Control
+var _sell_grid: GridContainer
+var _sell_empty: Label
+var _equipped_check: CheckBox
+var _sell_buttons: Array[Button] = []
+var _sell_items: Array[ItemData] = []
+var _sell_equipped: Array[bool] = []
+var _show_equipped := false
+var _sale_item: ItemData
 var _sell_popup: Panel
 var _sell_switch: CheckButton
+var _equipped_popup: Panel
+var _equipped_dont: CheckButton
 var _tip_off: Panel
 
 
@@ -102,6 +114,7 @@ func _ready() -> void:
 	$Potion2.gui_input.connect(_item_gui.bind("potion", 1))
 	_build_destroy_ui()
 	_build_sell_popup()
+	_build_equipped_popup()
 	if PlayerState.in_shop:
 		setup_shop()
 	_build_hand_choice()
@@ -275,6 +288,7 @@ func _apply_open_state() -> void:
 	var open := pause_view != PauseView.CLOSED
 	if open:
 		_close_buy()
+		_close_sell()
 	dimmer.visible = open
 	$PauseMenu.visible = pause_view == PauseView.MENU
 	gear_panel.visible = pause_view == PauseView.SHEET
@@ -383,6 +397,8 @@ func _refresh_gear() -> void:
 		_set_tip_item(_bag_buttons[index], item)
 		_show_item_icon(_bag_buttons[index], item)
 		ButtonStyle.apply_item(_bag_buttons[index], item != null and item.rarity == ItemData.Rarity.UNCOMMON, item != null and item.permanent)
+	if _sell_root != null and _sell_root.visible:
+		call_deferred("_fill_sell")
 
 
 func _set_tip_item(button: Button, item: ItemData) -> void:
@@ -396,64 +412,146 @@ func _set_tip_item(button: Button, item: ItemData) -> void:
 func setup_shop() -> void:
 	if _buy_button != null:
 		return
-	_buy_button = Button.new()
-	_buy_button.text = "Buy"
-	_buy_button.position = Vector2(460, 8)
-	_buy_button.size = Vector2(80, 28)
-	_buy_button.add_theme_font_size_override("font_size", 14)
-	ButtonStyle.apply(_buy_button)
-	_buy_button.pressed.connect(_toggle_buy)
+	_buy_button = _shop_button("Buy", Vector2(372, 8), _toggle_buy)
+	_buy_button.name = "BuyButton"
 	add_child(_buy_button)
-	_buy_root = Control.new()
-	_buy_root.visible = false
-	_buy_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_buy_root.z_index = 20
-	add_child(_buy_root)
-	var panel := Panel.new()
-	panel.position = Vector2(148, 64)
-	panel.size = Vector2(344, 150)
-	panel.mouse_filter = Control.MOUSE_FILTER_STOP
-	panel.add_theme_stylebox_override("panel", _menu_frame())
-	_buy_root.add_child(panel)
-	var title := Label.new()
-	title.text = "For sale"
-	title.position = Vector2(12, 8)
-	title.size = Vector2(160, 24)
-	title.add_theme_color_override("font_color", Color(0, 0, 0, 1))
-	title.add_theme_font_size_override("font_size", 16)
-	panel.add_child(title)
-	var close := Button.new()
-	close.text = "Close"
-	close.position = Vector2(252, 8)
-	close.size = Vector2(80, 28)
-	close.add_theme_font_size_override("font_size", 14)
-	ButtonStyle.apply(close)
-	close.pressed.connect(_close_buy)
-	panel.add_child(close)
+	_sell_button = _shop_button("Sell", Vector2(460, 8), _toggle_sell)
+	_sell_button.name = "SellButton"
+	add_child(_sell_button)
+	_buy_root = _shop_layer()
+	var buy_panel := _shop_panel(Vector2(148, 64), Vector2(344, 150))
+	_buy_root.add_child(buy_panel)
+	_add_panel_title(buy_panel, "For sale")
+	var buy_close := _shop_button("Close", Vector2(252, 8), _close_buy)
+	buy_panel.add_child(buy_close)
 	for index in 4:
 		var button := Button.new()
 		button.position = Vector2(16 + index * 82, 44)
 		button.size = Vector2(70, 90)
-		var caption := Label.new()
-		caption.name = "Caption"
-		caption.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		caption.offset_top = 58
-		caption.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		caption.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		caption.add_theme_font_size_override("font_size", 11)
-		caption.add_theme_color_override("font_color", Color(0, 0, 0, 1))
-		button.add_child(caption)
+		_add_price_tag(button)
 		_add_icon(button)
 		button.pressed.connect(_buy_stock.bind(index))
-		panel.add_child(button)
+		buy_panel.add_child(button)
 		_buy_buttons.append(button)
+	_sell_root = _shop_layer()
+	var sell_panel := _shop_panel(Vector2(60, 52), Vector2(520, 248))
+	_sell_root.add_child(sell_panel)
+	_add_panel_title(sell_panel, "Sell")
+	_equipped_check = CheckBox.new()
+	_equipped_check.text = "Show equipped"
+	_equipped_check.position = Vector2(96, 8)
+	_equipped_check.size = Vector2(170, 28)
+	_equipped_check.add_theme_font_size_override("font_size", 13)
+	_equipped_check.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	for color_name in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color"]:
+		_equipped_check.add_theme_color_override(color_name, Color(0, 0, 0, 1))
+	_equipped_check.toggled.connect(_on_show_equipped)
+	sell_panel.add_child(_equipped_check)
+	var sell_close := _shop_button("Close", Vector2(428, 8), _close_sell)
+	sell_panel.add_child(sell_close)
+	var scroll := ScrollContainer.new()
+	scroll.position = Vector2(12, 44)
+	scroll.size = Vector2(496, 192)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	sell_panel.add_child(scroll)
+	_sell_grid = GridContainer.new()
+	_sell_grid.columns = 6
+	_sell_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_sell_grid.add_theme_constant_override("h_separation", 8)
+	_sell_grid.add_theme_constant_override("v_separation", 8)
+	scroll.add_child(_sell_grid)
+	_sell_empty = Label.new()
+	_sell_empty.text = "Nothing to sell."
+	_sell_empty.position = Vector2(16, 108)
+	_sell_empty.size = Vector2(488, 28)
+	_sell_empty.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_sell_empty.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_sell_empty.add_theme_color_override("font_color", Color(0, 0, 0, 1))
+	_sell_empty.add_theme_font_size_override("font_size", 14)
+	_sell_empty.visible = false
+	sell_panel.add_child(_sell_empty)
+
+
+func _shop_button(title: String, at: Vector2, handler: Callable) -> Button:
+	var button := Button.new()
+	button.text = title
+	button.position = at
+	button.size = Vector2(80, 28)
+	button.add_theme_font_size_override("font_size", 14)
+	ButtonStyle.apply(button)
+	button.pressed.connect(handler)
+	return button
+
+
+func _shop_layer() -> Control:
+	var layer := Control.new()
+	layer.visible = false
+	layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	layer.z_index = 20
+	add_child(layer)
+	return layer
+
+
+func _shop_panel(at: Vector2, box: Vector2) -> Panel:
+	var panel := Panel.new()
+	panel.position = at
+	panel.size = box
+	panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	panel.add_theme_stylebox_override("panel", _menu_frame())
+	return panel
+
+
+func _add_panel_title(panel: Panel, title: String) -> void:
+	var label := Label.new()
+	label.text = title
+	label.position = Vector2(12, 8)
+	label.size = Vector2(80, 28)
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	label.add_theme_color_override("font_color", Color(0, 0, 0, 1))
+	label.add_theme_font_size_override("font_size", 16)
+	panel.add_child(label)
+
+
+func _add_price_tag(button: Button) -> void:
+	var row := HBoxContainer.new()
+	row.name = "Price"
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation", 3)
+	row.position = Vector2(2, button.size.y - 20)
+	row.size = Vector2(button.size.x - 4, 16)
+	var coin := TextureRect.new()
+	coin.name = "Coin"
+	coin.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	coin.custom_minimum_size = Vector2(14, 14)
+	coin.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	coin.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	coin.texture = COIN_TEXTURE
+	coin.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(coin)
+	var amount := Label.new()
+	amount.name = "Amount"
+	amount.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	amount.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	amount.add_theme_font_size_override("font_size", 12)
+	amount.add_theme_color_override("font_color", Color(0, 0, 0, 1))
+	amount.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(amount)
+	button.add_child(row)
+
+
+func _set_price_tag(button: Button, price: int) -> void:
+	var amount := button.get_node("Price/Amount") as Label
+	if amount != null:
+		amount.text = str(price)
 
 
 func _toggle_buy() -> void:
 	if _buy_root.visible:
 		_close_buy()
 		return
+	_close_sell()
 	_buy_root.visible = true
 	_fill_buy()
 
@@ -471,14 +569,13 @@ func _fill_buy() -> void:
 		var item: ItemData = null
 		if index < PlayerState.shop_stock.size():
 			item = PlayerState.shop_stock[index]
-		var caption := button.get_node("Caption") as Label
 		if item == null:
 			button.visible = false
 			_set_tip_item(button, null)
 			_show_item_icon(button, null)
 			continue
 		button.visible = true
-		caption.text = str(ShopPrices.buy_price(item, false))
+		_set_price_tag(button, ShopPrices.buy_price(item, false))
 		_set_tip_item(button, item)
 		_show_item_icon(button, item)
 		ButtonStyle.apply_item(button, item.rarity == ItemData.Rarity.UNCOMMON, item.permanent)
@@ -496,6 +593,170 @@ func _buy_stock(index: int) -> void:
 	PlayerState.spend_coins(price)
 	PlayerState.shop_stock.remove_at(index)
 	_fill_buy()
+
+
+func _toggle_sell() -> void:
+	if _sell_root != null and _sell_root.visible:
+		_close_sell()
+		return
+	_close_buy()
+	_show_equipped = false
+	if _equipped_check != null:
+		_equipped_check.set_pressed_no_signal(false)
+	_sell_root.visible = true
+	_fill_sell()
+
+
+func _close_sell() -> void:
+	if _sell_root == null:
+		return
+	_sell_root.visible = false
+	_hide_tip()
+	if _destroy_menu != null and (_destroy_menu.visible or _amount_menu.visible or _confirm_menu.visible):
+		if _equipped_popup != null:
+			_equipped_popup.visible = false
+		if _sell_popup != null:
+			_sell_popup.visible = false
+		_sale_item = null
+		return
+	if _destroy_menu != null:
+		_close_destroy()
+
+
+func _on_show_equipped(enabled: bool) -> void:
+	_show_equipped = enabled
+	_fill_sell()
+
+
+func _fill_sell() -> void:
+	if _sell_grid == null:
+		return
+	while _sell_grid.get_child_count() > 0:
+		var child := _sell_grid.get_child(0)
+		_sell_grid.remove_child(child)
+		child.free()
+	_sell_buttons.clear()
+	_sell_items.clear()
+	_sell_equipped.clear()
+	for item in PlayerState.inventory:
+		if item == null or item.is_coin():
+			continue
+		_sell_items.append(item)
+		_sell_equipped.append(false)
+	if _show_equipped:
+		for slot in PlayerState._all_slots():
+			var worn: ItemData = PlayerState.item_in_slot(slot)
+			if worn == null:
+				continue
+			_sell_items.append(worn)
+			_sell_equipped.append(true)
+		for index in 2:
+			var potion: ItemData = PlayerState.quick_potion(index)
+			if potion == null:
+				continue
+			_sell_items.append(potion)
+			_sell_equipped.append(true)
+	for index in _sell_items.size():
+		var button := Button.new()
+		button.custom_minimum_size = Vector2(70, 90)
+		button.size = Vector2(70, 90)
+		_add_price_tag(button)
+		_add_icon(button)
+		var listed: ItemData = _sell_items[index]
+		_set_price_tag(button, ShopPrices.sell_price(listed, false))
+		_set_tip_item(button, listed)
+		_show_item_icon(button, listed)
+		ButtonStyle.apply_item(button, listed.rarity == ItemData.Rarity.UNCOMMON, listed.permanent)
+		button.pressed.connect(_sell_listed.bind(index))
+		_sell_grid.add_child(button)
+		_sell_buttons.append(button)
+	_sell_empty.visible = _sell_items.is_empty()
+
+
+func _sell_listed(index: int) -> void:
+	if (_equipped_popup != null and _equipped_popup.visible) or (_sell_popup != null and _sell_popup.visible):
+		return
+	if index < 0 or index >= _sell_items.size():
+		return
+	var item: ItemData = _sell_items[index]
+	if item == null:
+		return
+	_sale_item = item
+	if _sell_equipped[index] and PlayerState.confirm_sell_equipped:
+		_equipped_dont.button_pressed = false
+		_equipped_popup.visible = true
+		_equipped_popup.position = Vector2(170, 90)
+		_destroy_shade.visible = true
+		return
+	_offer_kept_or_finish(item)
+
+
+func _offer_kept_or_finish(item: ItemData) -> void:
+	if item != null and item.permanent and not PlayerState.sell_kept:
+		_sale_item = item
+		_sell_popup.visible = true
+		_sell_switch.set_pressed_no_signal(false)
+		_destroy_shade.visible = true
+		_sell_popup.position = Vector2(160, 100)
+		return
+	_finish_sale(item)
+
+
+func _confirm_equipped_sale() -> void:
+	if _equipped_dont.button_pressed:
+		PlayerState.set_confirm_sell_equipped(false)
+	var item := _sale_item
+	_equipped_popup.visible = false
+	_equipped_dont.button_pressed = false
+	_offer_kept_or_finish(item)
+
+
+func _decline_equipped_sale() -> void:
+	_equipped_popup.visible = false
+	_equipped_dont.button_pressed = false
+	_sale_item = null
+	if not _destroy_menu.visible and (_sell_popup == null or not _sell_popup.visible):
+		_destroy_shade.visible = false
+
+
+func _build_equipped_popup() -> void:
+	_equipped_popup = _small_panel()
+	_equipped_popup.size = Vector2(300, 156)
+	var ask := Label.new()
+	ask.position = Vector2(12, 12)
+	ask.size = Vector2(276, 28)
+	ask.text = "Sell this equipped item?"
+	ask.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	ask.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ask.add_theme_font_size_override("font_size", 16)
+	ask.add_theme_color_override("font_color", Color(0, 0, 0, 1))
+	_equipped_popup.add_child(ask)
+	var dont := Label.new()
+	dont.position = Vector2(20, 48)
+	dont.size = Vector2(190, 28)
+	dont.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	dont.text = "Don't ask again"
+	dont.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	dont.add_theme_color_override("font_color", Color(0, 0, 0, 1))
+	dont.add_theme_font_size_override("font_size", 14)
+	_equipped_popup.add_child(dont)
+	_equipped_dont = CheckButton.new()
+	_equipped_dont.position = Vector2(220, 50)
+	_equipped_dont.custom_minimum_size = Vector2(24, 24)
+	_equipped_dont.size = Vector2(24, 24)
+	_equipped_dont.text = ""
+	_equipped_dont.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	_equipped_popup.add_child(_equipped_dont)
+	var yes := _destroy_button("Yes")
+	yes.position = Vector2(16, 100)
+	yes.size = Vector2(126, 40)
+	yes.pressed.connect(_confirm_equipped_sale)
+	_equipped_popup.add_child(yes)
+	var no := _destroy_button("No")
+	no.position = Vector2(158, 100)
+	no.size = Vector2(126, 40)
+	no.pressed.connect(_decline_equipped_sale)
+	_equipped_popup.add_child(no)
 
 
 func _build_sell_popup() -> void:
@@ -530,7 +791,9 @@ func _build_sell_popup() -> void:
 
 func _process(delta: float) -> void:
 	var buying := _buy_root != null and _buy_root.visible
-	if (pause_view != PauseView.SHEET and not buying) or (_choice_root != null and _choice_root.visible):
+	var selling_view := _sell_root != null and _sell_root.visible
+	var prompting := (_equipped_popup != null and _equipped_popup.visible) or (_sell_popup != null and _sell_popup.visible)
+	if prompting or (pause_view != PauseView.SHEET and not buying and not selling_view) or (_choice_root != null and _choice_root.visible):
 		_hover_button = null
 		_hover_time = 0.0
 		_hide_tip()
@@ -551,6 +814,11 @@ func _process(delta: float) -> void:
 
 
 func _button_under_mouse() -> Button:
+	if _sell_root != null and _sell_root.visible:
+		for sell_button in _sell_buttons:
+			if sell_button.visible and _contains_mouse(sell_button):
+				return sell_button
+		return null
 	if _buy_root != null and _buy_root.visible:
 		for buy_button in _buy_buttons:
 			if buy_button.visible and _contains_mouse(buy_button):
@@ -696,14 +964,10 @@ func _build_destroy_ui() -> void:
 	_destroy_shade.gui_input.connect(_close_destroy_event)
 	add_child(_destroy_shade)
 	_destroy_menu = _small_panel()
+	_destroy_menu.size = Vector2(160, 48)
 	var destroy := _destroy_button("Destroy")
 	destroy.pressed.connect(_click_destroy)
 	_destroy_menu.add_child(destroy)
-	_sell_choice = _destroy_button("Sell")
-	_sell_choice.position = Vector2(8, 46)
-	_sell_choice.visible = false
-	_sell_choice.pressed.connect(_click_sell)
-	_destroy_menu.add_child(_sell_choice)
 	_amount_menu = _small_panel()
 	var one := _destroy_button("Destroy 1")
 	one.position = Vector2(8, 8)
@@ -797,9 +1061,7 @@ func _open_destroy(item: ItemData) -> void:
 	_dont_ask.button_pressed = false
 	_amount_menu.visible = false
 	_confirm_menu.visible = false
-	var selling := PlayerState.in_shop
-	_sell_choice.visible = selling
-	_destroy_menu.size = Vector2(160, 90 if selling else 48)
+	_destroy_menu.size = Vector2(160, 48)
 	_destroy_menu.visible = true
 	_destroy_shade.visible = true
 	_place_popup(_destroy_menu, get_viewport().get_mouse_position())
@@ -871,20 +1133,6 @@ func _close_destroy_event(event: InputEvent) -> void:
 		_close_destroy()
 
 
-func _click_sell() -> void:
-	var item := _destroy_item
-	if item == null:
-		_close_destroy()
-		return
-	if item.permanent and not PlayerState.sell_kept:
-		_destroy_menu.visible = false
-		_amount_menu.visible = false
-		_sell_popup.visible = true
-		_sell_switch.set_pressed_no_signal(false)
-		return
-	_finish_sale(item)
-
-
 func _finish_sale(item: ItemData) -> void:
 	if item == null:
 		_close_destroy()
@@ -899,7 +1147,7 @@ func _on_shop_sell_switch(enabled: bool) -> void:
 	if not enabled:
 		return
 	PlayerState.set_sell_kept(true)
-	var item := _destroy_item
+	var item := _sale_item
 	_close_destroy()
 	if item != null:
 		_finish_sale(item)
@@ -908,12 +1156,15 @@ func _on_shop_sell_switch(enabled: bool) -> void:
 func _close_destroy() -> void:
 	_destroy_item = null
 	_destroy_amount = 0
+	_sale_item = null
 	_destroy_shade.visible = false
 	_destroy_menu.visible = false
 	_amount_menu.visible = false
 	_confirm_menu.visible = false
 	if _sell_popup != null:
 		_sell_popup.visible = false
+	if _equipped_popup != null:
+		_equipped_popup.visible = false
 
 
 func _use_quick_potion(index: int) -> void:
