@@ -18,8 +18,11 @@ const PICKUP_SCENE := preload("res://scenes/pickup/pickup.tscn")
 
 @export var max_health := 22
 var health := 22
-var attack_left := 0.7
+var attack_left := 0.0
 var alive := true
+var _turn_left := 0.0
+var _notice_left := -1.0
+var _alert := false
 
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
 @onready var muzzle: Marker2D = $Muzzle
@@ -29,6 +32,8 @@ func _ready() -> void:
 	health = max_health
 	sprite.play("idle")
 	sprite.modulate = TINT
+	sprite.flip_h = EnemySight.random_facing()
+	_turn_left = EnemySight.random_turn_wait()
 
 
 func _physics_process(delta: float) -> void:
@@ -42,7 +47,24 @@ func _physics_process(delta: float) -> void:
 	attack_left = maxf(attack_left - delta, 0.0)
 	var direction := 0.0
 	var player := get_tree().get_first_node_in_group("player") as Node2D
-	if player != null and player.has_method("is_alive") and player.is_alive() and EnemySight.on_screen(sprite):
+	var on_screen := EnemySight.on_screen(sprite)
+	var aware: bool = player != null and player.has_method("is_alive") and player.is_alive() and on_screen
+	var attacking := false
+	if aware and _alert:
+		attacking = true
+	elif aware and EnemySight.facing_player(sprite, global_position.x, player.global_position.x):
+		if _notice_left < 0.0:
+			_notice_left = EnemySight.NOTICE_TIME
+		else:
+			_notice_left = maxf(_notice_left - delta, 0.0)
+		if _notice_left <= 0.001:
+			_alert = true
+			attacking = true
+	else:
+		_notice_left = -1.0
+		if not on_screen:
+			_alert = false
+	if attacking:
 		var dx := player.global_position.x - global_position.x
 		sprite.flip_h = dx < 0.0
 		var distance := absf(dx)
@@ -54,6 +76,11 @@ func _physics_process(delta: float) -> void:
 		elif attack_left <= 0.0 and distance < 420.0:
 			attack_left = SHOT_COOLDOWN
 			_fire(dx)
+	elif _notice_left < 0.0:
+		_turn_left -= delta
+		if _turn_left <= 0.0:
+			sprite.flip_h = not sprite.flip_h
+			_turn_left = EnemySight.random_turn_wait()
 	velocity.x = direction * SPEED
 	move_and_slide()
 
