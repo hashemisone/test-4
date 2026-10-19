@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://scripts/menu/menu.gd" id="1_menu"]
 [ext_resource type="PackedScene" path="res://scenes/ui/settings.tscn" id="2_settings"]
 [ext_resource type="Script" path="res://scripts/ui/cheat_menu.gd" id="3_cheat"]
+[ext_resource type="PackedScene" path="res://scenes/hud/hud.tscn" id="4_hud"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
 bg_color = Color(1, 1, 1, 1)
@@ -202,6 +203,81 @@ offset_bottom = 152.0
 theme_override_font_sizes/font_size = 14
 text = "5"
 
+[node name="LevelMenu" type="Button" parent="."]
+visible = false
+layout_mode = 0
+offset_left = 128.0
+offset_top = 292.0
+offset_right = 248.0
+offset_bottom = 332.0
+theme_override_font_sizes/font_size = 16
+text = "Menu"
+
+[node name="LevelInventory" type="Button" parent="."]
+visible = false
+layout_mode = 0
+offset_left = 260.0
+offset_top = 292.0
+offset_right = 380.0
+offset_bottom = 332.0
+theme_override_font_sizes/font_size = 16
+text = "Inventory"
+
+[node name="LevelCharacter" type="Button" parent="."]
+visible = false
+layout_mode = 0
+offset_left = 392.0
+offset_top = 292.0
+offset_right = 512.0
+offset_bottom = 332.0
+theme_override_font_sizes/font_size = 16
+text = "Character"
+
+[node name="HubMenu" type="Panel" parent="."]
+visible = false
+layout_mode = 0
+offset_left = 204.0
+offset_top = 64.0
+offset_right = 436.0
+offset_bottom = 296.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="SettingsButton" type="Button" parent="HubMenu"]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 18.0
+offset_right = 214.0
+offset_bottom = 58.0
+theme_override_font_sizes/font_size = 16
+text = "Settings"
+
+[node name="Cheat" type="Button" parent="HubMenu"]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 70.0
+offset_right = 214.0
+offset_bottom = 110.0
+theme_override_font_sizes/font_size = 16
+text = "Cheat"
+
+[node name="Quit" type="Button" parent="HubMenu"]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 122.0
+offset_right = 214.0
+offset_bottom = 162.0
+theme_override_font_sizes/font_size = 16
+text = "Quit"
+
+[node name="Close" type="Button" parent="HubMenu"]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 174.0
+offset_right = 214.0
+offset_bottom = 214.0
+theme_override_font_sizes/font_size = 16
+text = "Close"
+
 [node name="Settings" parent="." instance=ExtResource("2_settings")]
 
 [node name="CheatBack" type="Button" parent="."]
@@ -245,3 +321,7 @@ horizontal_scroll_mode = 0
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 4
+
+[node name="HUD" parent="." instance=ExtResource("4_hud")]
+visible = false
+hub = true

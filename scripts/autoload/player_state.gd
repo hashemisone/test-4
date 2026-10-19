@@ -28,6 +28,7 @@ var bonus_melee_left := 0.0
 var quick_health: ItemData
 var quick_attack: ItemData
 var coins := 0
+var return_to_levels := false
 
 const COIN_SAVE := "user://coins.json"
 

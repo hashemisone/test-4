@@ -1,6 +1,10 @@
 extends CanvasLayer
 
+signal hub_closed
+
 const HOVER_DELAY := 0.4
+
+@export var hub := false
 
 enum PauseView { CLOSED, MENU, SHEET, CHEAT, SETTINGS }
 
@@ -106,6 +110,10 @@ func _bind_slot(button: Button, slot: ItemData.Slot, caption: String) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_echo():
 		return
+	if hub and not visible:
+		return
+	if hub and (event.is_action_pressed("potion_1") or event.is_action_pressed("potion_2")):
+		return
 	if event.is_action_pressed("toggle_stats"):
 		toggle_gear()
 		get_viewport().set_input_as_handled()
@@ -136,10 +144,22 @@ func show_status(message: String) -> void:
 
 
 func toggle_gear() -> void:
+	if hub:
+		if pause_view != PauseView.CLOSED:
+			_close_hub()
+		return
 	if pause_view == PauseView.CLOSED:
 		pause_view = PauseView.MENU
 	else:
 		pause_view = PauseView.CLOSED
+	_apply_open_state()
+
+
+func open_hub_sheet(character: bool) -> void:
+	hub = true
+	visible = true
+	character_tab = character
+	pause_view = PauseView.SHEET
 	_apply_open_state()
 
 
@@ -150,6 +170,9 @@ func _resume() -> void:
 
 func _toggle_character() -> void:
 	if pause_view == PauseView.SHEET and character_tab:
+		if hub:
+			_close_hub()
+			return
 		pause_view = PauseView.CLOSED
 	else:
 		character_tab = true
@@ -159,6 +182,9 @@ func _toggle_character() -> void:
 
 func _toggle_inventory() -> void:
 	if pause_view == PauseView.SHEET and not character_tab:
+		if hub:
+			_close_hub()
+			return
 		pause_view = PauseView.CLOSED
 	else:
 		character_tab = false
@@ -167,8 +193,18 @@ func _toggle_inventory() -> void:
 
 
 func _back_to_menu() -> void:
+	if hub:
+		_close_hub()
+		return
 	pause_view = PauseView.MENU
 	_apply_open_state()
+
+
+func _close_hub() -> void:
+	pause_view = PauseView.CLOSED
+	_apply_open_state()
+	visible = false
+	hub_closed.emit()
 
 
 func _open_cheat() -> void:
@@ -184,6 +220,7 @@ func _open_settings() -> void:
 
 func _quit_run() -> void:
 	get_tree().paused = false
+	PlayerState.return_to_levels = true
 	get_tree().change_scene_to_file("res://scenes/menu.tscn")
 
 
@@ -223,9 +260,25 @@ func _apply_open_state() -> void:
 	inventory_box.visible = show_boxes
 	_refresh_sheet_keys()
 	gear_button.text = "Close" if open else "Menu"
-	get_tree().paused = open
+	if hub:
+		get_tree().paused = false
+	else:
+		get_tree().paused = open
 	_apply_tab()
 	_refresh_gear()
+	if hub:
+		_hide_fight_chrome()
+
+
+func _hide_fight_chrome() -> void:
+	$GearButton.visible = false
+	$Potion1.visible = false
+	$Potion2.visible = false
+	$PlayerHealth.visible = false
+	$CoinIcon.visible = false
+	$CoinLabel.visible = false
+	$HintLabel.visible = false
+	$BuffLabel.visible = false
 
 
 func _apply_tab() -> void:
