@@ -79,6 +79,16 @@ func _physics_process(delta: float) -> void:
 	_note_return(delta, x_before)
 
 
+func _engage_from_hit() -> void:
+	_alert = true
+	_notice_left = -1.0
+	_lost_left = -1.0
+	_returning = false
+	var player := get_tree().get_first_node_in_group("player") as Node2D
+	if player != null:
+		sprite.flip_h = player.global_position.x < global_position.x
+
+
 func _begin_return() -> void:
 	_returning = not EnemySight.at_home(self, _home)
 	_stuck_left = EnemySight.STUCK_TIME
@@ -118,6 +128,7 @@ func take_damage(amount: int) -> void:
 		_drop_loot()
 		queue_free()
 		return
+	_engage_from_hit()
 	sprite.modulate = Color(1.0, 0.5, 0.45)
 	var flash := create_tween()
 	flash.tween_property(sprite, "modulate", Color.WHITE, 0.12)
