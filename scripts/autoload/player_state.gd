@@ -37,15 +37,21 @@ var in_shop := false
 var shop_market := false
 var shop_refreshes := 0
 var shop_stock: Array[ItemData] = []
+var market_free_at := 0
+var market_paid := 0
+var _market_packed: Array = []
 
 const COIN_SAVE := "user://coins.json"
 const GEAR_SAVE := "user://permanent.json"
 const OPTIONS_SAVE := "user://options.json"
+const MARKET_SAVE := "user://market.json"
+const MARKET_FREE_WAIT := 3600
 
 
 func _ready() -> void:
 	_load_coins()
 	_load_options()
+	_load_market()
 	_load_permanent()
 	start_run()
 
@@ -220,7 +226,29 @@ func roll_shop_stock(kept: bool = false) -> void:
 	_fill_shop_stock()
 
 
+func prepare_market() -> void:
+	shop_market = true
+	_load_market()
+	if _market_free_ready():
+		market_free_at = int(Time.get_unix_time_from_system())
+		market_paid = 0
+		_fill_shop_stock()
+		_save_market()
+		return
+	shop_stock.clear()
+	for entry in _market_packed:
+		if typeof(entry) != TYPE_DICTIONARY:
+			continue
+		var item := _unpack_item(entry)
+		if item != null:
+			shop_stock.append(item)
+
+
 func shop_refresh_cost() -> int:
+	if shop_market:
+		if _market_free_ready():
+			return 0
+		return (market_paid + 1) * 5
 	return shop_refreshes * 5
 
 
@@ -231,10 +259,30 @@ func refresh_shop_stock() -> bool:
 	if cost > 0:
 		coins -= cost
 		_save_coins()
-	shop_refreshes += 1
-	_fill_shop_stock()
+	if shop_market:
+		if cost == 0:
+			market_free_at = int(Time.get_unix_time_from_system())
+			market_paid = 0
+		else:
+			market_paid += 1
+		_fill_shop_stock()
+		_save_market()
+	else:
+		shop_refreshes += 1
+		_fill_shop_stock()
 	changed.emit()
 	return true
+
+
+func remember_market_stock() -> void:
+	if shop_market:
+		_save_market()
+
+
+func _market_free_ready() -> bool:
+	if market_free_at <= 0:
+		return true
+	return int(Time.get_unix_time_from_system()) - market_free_at >= MARKET_FREE_WAIT
 
 
 func _fill_shop_stock() -> void:
@@ -302,6 +350,40 @@ func _load_options() -> void:
 		sell_kept = bool(parsed["sell_kept"])
 	if parsed.has("confirm_sell_equipped"):
 		confirm_sell_equipped = bool(parsed["confirm_sell_equipped"])
+
+
+func _load_market() -> void:
+	market_free_at = 0
+	market_paid = 0
+	_market_packed = []
+	if not FileAccess.file_exists(MARKET_SAVE):
+		return
+	var file := FileAccess.open(MARKET_SAVE, FileAccess.READ)
+	if file == null:
+		return
+	var parsed = JSON.parse_string(file.get_as_text())
+	if typeof(parsed) != TYPE_DICTIONARY:
+		return
+	market_free_at = int(parsed.get("free_at", 0))
+	market_paid = maxi(int(parsed.get("paid", 0)), 0)
+	var stock = parsed.get("stock", [])
+	if typeof(stock) == TYPE_ARRAY:
+		_market_packed = stock
+
+
+func _save_market() -> void:
+	var packed: Array = []
+	for item in shop_stock:
+		packed.append(_pack_item(item))
+	_market_packed = packed
+	var file := FileAccess.open(MARKET_SAVE, FileAccess.WRITE)
+	if file == null:
+		return
+	file.store_string(JSON.stringify({
+		"free_at": market_free_at,
+		"paid": market_paid,
+		"stock": packed,
+	}))
 
 
 func _save_options() -> void:

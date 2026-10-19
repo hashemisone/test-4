@@ -62,6 +62,14 @@ var _sell_items: Array[ItemData] = []
 var _sell_equipped: Array[bool] = []
 var _show_equipped := false
 var _sale_item: ItemData
+var _sale_amount := 1
+var _sale_equipped := false
+var _sell_amount_menu: Panel
+var _sell_amount_edit: LineEdit
+var _sell_one_pay: Label
+var _sell_all_pay: Label
+var _sell_typed_pay: Label
+var _sell_typed_coin: TextureRect
 var _sell_popup: Panel
 var _sell_switch: CheckButton
 var _equipped_popup: Panel
@@ -122,6 +130,8 @@ func _ready() -> void:
 	_build_destroy_ui()
 	_build_sell_popup()
 	_build_equipped_popup()
+	_build_sell_amount_menu()
+	_pass_mouse($HoverTip)
 	if PlayerState.in_shop:
 		setup_shop()
 	_build_hand_choice()
@@ -727,6 +737,7 @@ func _buy_stock(index: int) -> void:
 		return
 	PlayerState.spend_coins(price)
 	PlayerState.shop_stock.remove_at(index)
+	PlayerState.remember_market_stock()
 	_fill_buy()
 
 
@@ -750,6 +761,8 @@ func _close_sell() -> void:
 			_equipped_popup.visible = false
 		if _sell_popup != null:
 			_sell_popup.visible = false
+		if _sell_amount_menu != null:
+			_sell_amount_menu.visible = false
 		_sale_item = null
 		return
 	if _destroy_menu != null:
@@ -814,6 +827,7 @@ func _fill_sell() -> void:
 		_add_icon(button)
 		var listed: ItemData = _sell_items[index]
 		_set_price_tag(button, ShopPrices.sell_price(listed, PlayerState.shop_market))
+		_set_stack_count(button, listed.stack)
 		_set_tip_item(button, listed)
 		_show_item_icon(button, listed)
 		ButtonStyle.apply_item(button, listed.rarity == ItemData.Rarity.UNCOMMON, listed.permanent)
@@ -823,8 +837,30 @@ func _fill_sell() -> void:
 	_sell_empty.visible = _sell_items.is_empty()
 
 
+func _set_stack_count(button: Button, stack: int) -> void:
+	var count := button.get_node_or_null("Qty") as Label
+	if stack <= 1:
+		if count != null:
+			count.visible = false
+		return
+	if count == null:
+		count = Label.new()
+		count.name = "Qty"
+		count.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		count.position = Vector2(2, 1)
+		count.size = Vector2(button.size.x - 4, 16)
+		count.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		count.add_theme_font_size_override("font_size", 12)
+		count.add_theme_color_override("font_color", Color(0, 0, 0, 1))
+		count.add_theme_color_override("font_outline_color", Color(1, 1, 1, 1))
+		count.add_theme_constant_override("outline_size", 4)
+		button.add_child(count)
+	count.text = "x%d" % stack
+	count.visible = true
+
+
 func _sell_listed(index: int) -> void:
-	if (_equipped_popup != null and _equipped_popup.visible) or (_sell_popup != null and _sell_popup.visible):
+	if _sell_choice_open():
 		return
 	if index < 0 or index >= _sell_items.size():
 		return
@@ -832,13 +868,74 @@ func _sell_listed(index: int) -> void:
 	if item == null:
 		return
 	_sale_item = item
-	if _sell_equipped[index] and PlayerState.confirm_sell_equipped:
+	_sale_equipped = _sell_equipped[index]
+	_sale_amount = 1
+	if item.stack > 1:
+		_open_sell_amount()
+		return
+	_continue_sale()
+
+
+func _sell_choice_open() -> bool:
+	if _equipped_popup != null and _equipped_popup.visible:
+		return true
+	if _sell_popup != null and _sell_popup.visible:
+		return true
+	return _sell_amount_menu != null and _sell_amount_menu.visible
+
+
+func _open_sell_amount() -> void:
+	_sell_amount_edit.text = ""
+	_show_sell_payouts()
+	_sell_amount_menu.visible = true
+	_destroy_shade.visible = true
+	_sell_amount_menu.position = Vector2(160, 80)
+	_hide_tip()
+
+
+func _show_sell_payouts() -> void:
+	if _sale_item == null:
+		return
+	var unit := ShopPrices.sell_price(_sale_item, PlayerState.shop_market)
+	_sell_one_pay.text = str(unit)
+	_sell_all_pay.text = str(unit * _sale_item.stack)
+	var typed := _typed_sell_count()
+	if typed <= 0:
+		_sell_typed_coin.visible = false
+		_sell_typed_pay.text = ""
+		return
+	_sell_typed_coin.visible = true
+	_sell_typed_pay.text = str(unit * mini(typed, _sale_item.stack))
+
+
+func _typed_sell_count() -> int:
+	var text := _sell_amount_edit.text.strip_edges()
+	if not text.is_valid_int():
+		return 0
+	return int(text)
+
+
+func _sell_typed_amount() -> void:
+	var typed := _typed_sell_count()
+	if typed <= 0 or _sale_item == null:
+		return
+	_continue_sale(mini(typed, _sale_item.stack))
+
+
+func _continue_sale(amount: int = 1) -> void:
+	if _sale_item == null or amount <= 0:
+		_close_destroy()
+		return
+	_sale_amount = mini(amount, _sale_item.stack)
+	if _sell_amount_menu != null:
+		_sell_amount_menu.visible = false
+	if _sale_equipped and PlayerState.confirm_sell_equipped:
 		_equipped_dont.button_pressed = false
 		_equipped_popup.visible = true
 		_equipped_popup.position = Vector2(170, 90)
 		_destroy_shade.visible = true
 		return
-	_offer_kept_or_finish(item)
+	_offer_kept_or_finish(_sale_item)
 
 
 func _offer_kept_or_finish(item: ItemData) -> void:
@@ -849,7 +946,7 @@ func _offer_kept_or_finish(item: ItemData) -> void:
 		_destroy_shade.visible = true
 		_sell_popup.position = Vector2(160, 100)
 		return
-	_finish_sale(item)
+	_finish_sale(item, _sale_amount)
 
 
 func _confirm_equipped_sale() -> void:
@@ -867,6 +964,89 @@ func _decline_equipped_sale() -> void:
 	_sale_item = null
 	if not _destroy_menu.visible and (_sell_popup == null or not _sell_popup.visible):
 		_destroy_shade.visible = false
+
+
+func _build_sell_amount_menu() -> void:
+	_sell_amount_menu = _small_panel()
+	_sell_amount_menu.size = Vector2(250, 136)
+	_sell_one_pay = _sell_pay_button("Sell 1", 8, _continue_sale.bind(1))
+	_sell_all_pay = _sell_pay_button("Sell all", 46, _sell_all_amount)
+	_sell_amount_edit = LineEdit.new()
+	_sell_amount_edit.position = Vector2(8, 92)
+	_sell_amount_edit.size = Vector2(78, 32)
+	_sell_amount_edit.placeholder_text = "Number"
+	_sell_amount_edit.add_theme_color_override("font_color", Color(0, 0, 0, 1))
+	_sell_amount_edit.text_changed.connect(_on_sell_amount_typed)
+	_sell_amount_menu.add_child(_sell_amount_edit)
+	_sell_typed_coin = TextureRect.new()
+	_sell_typed_coin.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_sell_typed_coin.position = Vector2(92, 100)
+	_sell_typed_coin.size = Vector2(16, 16)
+	_sell_typed_coin.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_sell_typed_coin.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_sell_typed_coin.texture = COIN_TEXTURE
+	_sell_typed_coin.visible = false
+	_sell_amount_menu.add_child(_sell_typed_coin)
+	_sell_typed_pay = Label.new()
+	_sell_typed_pay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_sell_typed_pay.position = Vector2(110, 92)
+	_sell_typed_pay.size = Vector2(52, 32)
+	_sell_typed_pay.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_sell_typed_pay.add_theme_color_override("font_color", Color(0, 0, 0, 1))
+	_sell_typed_pay.add_theme_font_size_override("font_size", 14)
+	_sell_amount_menu.add_child(_sell_typed_pay)
+	var ok := _destroy_button("Ok")
+	ok.position = Vector2(166, 92)
+	ok.size = Vector2(72, 32)
+	ok.pressed.connect(_sell_typed_amount)
+	_sell_amount_menu.add_child(ok)
+
+
+func _sell_pay_button(title: String, y: float, handler: Callable) -> Label:
+	var button := Button.new()
+	button.position = Vector2(8, y)
+	button.size = Vector2(234, 32)
+	button.text = ""
+	button.focus_mode = Control.FOCUS_NONE
+	ButtonStyle.apply(button)
+	button.pressed.connect(handler)
+	_sell_amount_menu.add_child(button)
+	var word := Label.new()
+	word.text = title
+	word.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	word.position = Vector2(8, 0)
+	word.size = Vector2(120, 32)
+	word.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	word.add_theme_color_override("font_color", Color(0, 0, 0, 1))
+	word.add_theme_font_size_override("font_size", 14)
+	button.add_child(word)
+	var coin := TextureRect.new()
+	coin.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	coin.position = Vector2(150, 8)
+	coin.size = Vector2(16, 16)
+	coin.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	coin.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	coin.texture = COIN_TEXTURE
+	button.add_child(coin)
+	var pay := Label.new()
+	pay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	pay.position = Vector2(170, 0)
+	pay.size = Vector2(56, 32)
+	pay.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	pay.add_theme_color_override("font_color", Color(0, 0, 0, 1))
+	pay.add_theme_font_size_override("font_size", 14)
+	button.add_child(pay)
+	return pay
+
+
+func _sell_all_amount() -> void:
+	if _sale_item == null:
+		return
+	_continue_sale(_sale_item.stack)
+
+
+func _on_sell_amount_typed(_text: String) -> void:
+	_show_sell_payouts()
 
 
 func _build_equipped_popup() -> void:
@@ -940,9 +1120,11 @@ func _build_sell_popup() -> void:
 
 
 func _process(delta: float) -> void:
+	if _buy_root != null and _buy_root.visible and PlayerState.shop_market:
+		_update_refresh()
 	var buying := _buy_root != null and _buy_root.visible
 	var selling_view := _sell_root != null and _sell_root.visible
-	var prompting := (_equipped_popup != null and _equipped_popup.visible) or (_sell_popup != null and _sell_popup.visible)
+	var prompting := _sell_choice_open()
 	if prompting or (pause_view != PauseView.SHEET and not buying and not selling_view) or (_choice_root != null and _choice_root.visible):
 		_hover_button = null
 		_hover_time = 0.0
@@ -989,6 +1171,7 @@ func _build_hand_choice() -> void:
 	_tip_off = $HoverTip.duplicate()
 	_tip_off.name = "HoverTipOff"
 	add_child(_tip_off)
+	_pass_mouse(_tip_off)
 	_tip_off.visible = false
 	_choice_root = Control.new()
 	_choice_root.name = "HandChoice"
@@ -1283,12 +1466,16 @@ func _close_destroy_event(event: InputEvent) -> void:
 		_close_destroy()
 
 
-func _finish_sale(item: ItemData) -> void:
+func _finish_sale(item: ItemData, amount: int) -> void:
 	if item == null:
 		_close_destroy()
 		return
-	var price := ShopPrices.sell_price(item, PlayerState.shop_market)
-	PlayerState.destroy_item(item, 1)
+	var count := mini(maxi(amount, 0), item.stack)
+	if count <= 0:
+		_close_destroy()
+		return
+	var price := ShopPrices.sell_price(item, PlayerState.shop_market) * count
+	PlayerState.destroy_item(item, count)
 	PlayerState.add_coins(price)
 	_close_destroy()
 
@@ -1298,15 +1485,18 @@ func _on_shop_sell_switch(enabled: bool) -> void:
 		return
 	PlayerState.set_sell_kept(true)
 	var item := _sale_item
+	var amount := _sale_amount
 	_close_destroy()
 	if item != null:
-		_finish_sale(item)
+		_finish_sale(item, amount)
 
 
 func _close_destroy() -> void:
 	_destroy_item = null
 	_destroy_amount = 0
 	_sale_item = null
+	_sale_amount = 1
+	_sale_equipped = false
 	_destroy_shade.visible = false
 	_destroy_menu.visible = false
 	_amount_menu.visible = false
@@ -1315,6 +1505,8 @@ func _close_destroy() -> void:
 		_sell_popup.visible = false
 	if _equipped_popup != null:
 		_equipped_popup.visible = false
+	if _sell_amount_menu != null:
+		_sell_amount_menu.visible = false
 
 
 func _use_quick_potion(index: int) -> void:
@@ -1377,7 +1569,17 @@ func _refresh_buffs() -> void:
 	label.visible = lines.size() > 0
 
 
+func _pass_mouse(node: Node) -> void:
+	if node is Control:
+		(node as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for child in node.get_children():
+		_pass_mouse(child)
+
+
 func _show_tip(item: ItemData) -> void:
+	_pass_mouse($HoverTip)
+	if _tip_off != null:
+		_pass_mouse(_tip_off)
 	if item.is_potion():
 		if _tip_off != null:
 			_tip_off.visible = false

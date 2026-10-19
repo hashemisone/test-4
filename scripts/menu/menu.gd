@@ -1,9 +1,19 @@
 extends Control
 
 var _return_to_levels := false
+var _shop_background: TextureRect
 
 
 func _ready() -> void:
+	_shop_background = TextureRect.new()
+	_shop_background.name = "ShopBackground"
+	_shop_background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_shop_background.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_shop_background.texture = load("res://art/background/shop.png")
+	_shop_background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_shop_background.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	_shop_background.visible = false
+	add_child(_shop_background)
 	get_tree().paused = false
 	ButtonStyle.apply($Panel/Play)
 	ButtonStyle.apply($Panel/Level)
@@ -54,6 +64,7 @@ func _show_levels() -> void:
 	$CheatBack.visible = false
 	$HUD.visible = false
 	$Market.visible = false
+	_shop_background.visible = false
 	_show_level_actions(true)
 	_return_to_levels = false
 
@@ -77,6 +88,7 @@ func _show_title() -> void:
 	$CheatBack.visible = false
 	$HUD.visible = false
 	$Market.visible = false
+	_shop_background.visible = false
 	_show_level_actions(false)
 
 
@@ -101,7 +113,8 @@ func _open_market() -> void:
 	$CheatBack.visible = false
 	$Market.visible = false
 	_show_level_actions(false)
-	PlayerState.roll_shop_stock(true)
+	_shop_background.visible = true
+	PlayerState.prepare_market()
 	$HUD.open_market()
 
 
@@ -109,6 +122,7 @@ func _open_sheet(character: bool) -> void:
 	$Levels.visible = false
 	$HubMenu.visible = false
 	$Market.visible = false
+	_shop_background.visible = false
 	_show_level_actions(false)
 	$HUD.open_hub_sheet(character)
 
@@ -128,6 +142,7 @@ func _show_cheat() -> void:
 	$Levels.visible = false
 	$HubMenu.visible = false
 	$Market.visible = false
+	_shop_background.visible = false
 	_show_level_actions(false)
 	$Settings.visible = false
 	$CheatPage.visible = true
@@ -150,6 +165,7 @@ func _show_settings() -> void:
 	$Levels.visible = false
 	$HubMenu.visible = false
 	$Market.visible = false
+	_shop_background.visible = false
 	_show_level_actions(false)
 	$Settings.visible = true
 	$Settings.show_home()
