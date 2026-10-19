@@ -26,18 +26,18 @@ func _show_folder() -> void:
 		box.add_child(_button("Up", _up))
 	if _path.is_empty():
 		box.add_child(_button("Enemy", _enter.bind("Enemy")))
-		box.add_child(_button("Equipment", _enter.bind("Equipment")))
-		box.add_child(_button("Potion", _enter.bind("Potion")))
+		box.add_child(_button("Items", _enter.bind("Items")))
+		box.add_child(_button("Money", _enter.bind("Money")))
 		box.add_child(_button("Room", _enter.bind("Room")))
 		return
 	if _path[0] == "Enemy":
 		_show_enemies(box)
-	elif _path[0] == "Equipment":
-		_show_equipment(box)
+	elif _path[0] == "Items":
+		_show_items(box)
+	elif _path[0] == "Money":
+		_show_money(box)
 	elif _path[0] == "Room":
 		_show_rooms(box)
-	else:
-		_show_potions(box)
 
 
 func _show_enemies(box: VBoxContainer) -> void:
@@ -48,15 +48,38 @@ func _show_enemies(box: VBoxContainer) -> void:
 	box.add_child(_button("Shooter", _spawn.bind(SHOOTER_SCENE, "shooter")))
 
 
-func _show_equipment(box: VBoxContainer) -> void:
+func _show_items(box: VBoxContainer) -> void:
 	if _path.size() == 1:
-		box.add_child(_button("Common", _enter.bind("Common")))
-		box.add_child(_button("Uncommon", _enter.bind("Uncommon")))
+		box.add_child(_button("Run", _enter.bind("Run")))
+		box.add_child(_button("Kept", _enter.bind("Kept")))
 		box.add_child(_button("Add one of each", _add_one_of_each))
 		return
-	var rarity := ItemData.Rarity.COMMON if _path[1] == "Common" else ItemData.Rarity.UNCOMMON
+	if _path.size() == 2:
+		box.add_child(_button("Equipment", _enter.bind("Equipment")))
+		box.add_child(_button("Potions", _enter.bind("Potions")))
+		return
+	var kept := _path[1] == "Kept"
+	if _path[2] == "Potions":
+		for item in _sorted_items(true, ItemData.Rarity.COMMON):
+			box.add_child(_button(item.display_name, _give.bind(item, kept)))
+		return
+	if _path.size() == 3:
+		box.add_child(_button("Common", _enter.bind("Common")))
+		box.add_child(_button("Uncommon", _enter.bind("Uncommon")))
+		return
+	var rarity := ItemData.Rarity.COMMON if _path[3] == "Common" else ItemData.Rarity.UNCOMMON
 	for item in _sorted_items(false, rarity):
-		box.add_child(_button(item.display_name, _give.bind(item)))
+		box.add_child(_button(item.display_name, _give.bind(item, kept)))
+
+
+func _show_money(box: VBoxContainer) -> void:
+	box.add_child(_button("+1", _add_coins.bind(1)))
+	box.add_child(_button("+10", _add_coins.bind(10)))
+	box.add_child(_button("+100", _add_coins.bind(100)))
+
+
+func _add_coins(amount: int) -> void:
+	PlayerState.add_coins(amount)
 
 
 func _show_rooms(box: VBoxContainer) -> void:
@@ -68,11 +91,6 @@ func _show_rooms(box: VBoxContainer) -> void:
 func _go_room(path: String) -> void:
 	get_tree().paused = false
 	get_tree().call_deferred("change_scene_to_file", path)
-
-
-func _show_potions(box: VBoxContainer) -> void:
-	for item in _sorted_items(true, ItemData.Rarity.COMMON):
-		box.add_child(_button(item.display_name, _give.bind(item)))
 
 
 func _sorted_items(potions: bool, rarity: ItemData.Rarity) -> Array[ItemData]:
@@ -159,8 +177,10 @@ func _button(title: String, action: Callable) -> Button:
 	return button
 
 
-func _give(template: ItemData) -> void:
-	if not PlayerState.add_item(template.roll_copy()):
+func _give(template: ItemData, kept: bool) -> void:
+	var item := template.roll_copy()
+	item.permanent = kept
+	if not PlayerState.add_item(item):
 		_status("Inventory full.")
 
 
