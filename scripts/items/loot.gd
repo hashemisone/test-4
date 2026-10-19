@@ -32,7 +32,7 @@ static func roll(enemy_level: int) -> ItemData:
 	var copy := template.roll_copy()
 	if copy.is_coin():
 		copy.coin_amount = randi_range(1, 3)
-	elif randi() % PERMANENT_CHANCE == 0:
+	elif randi_range(1, PERMANENT_CHANCE) == 1:
 		copy.permanent = true
 	return copy
 
