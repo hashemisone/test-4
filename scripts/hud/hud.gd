@@ -16,8 +16,8 @@ var show_shooter_row := true
 
 @onready var hint_label: Label = $HintLabel
 @onready var gear_button: Button = $GearButton
-@onready var character_tab_button: Button = $CharacterTab
-@onready var inventory_tab_button: Button = $InventoryTab
+@onready var character_box: Button = $CharacterBox
+@onready var inventory_box: Button = $InventoryBox
 @onready var dimmer: ColorRect = $Dimmer
 @onready var gear_panel: Panel = $GearPanel
 @onready var character_page: Control = $GearPanel/CharacterPage
@@ -66,12 +66,14 @@ func _ready() -> void:
 	gear_button.pressed.connect(toggle_gear)
 	ButtonStyle.apply($BackButton)
 	$BackButton.pressed.connect(_back_to_menu)
-	for menu_button in [$PauseMenu/Resume, $PauseMenu/Character, $PauseMenu/Inventory, $PauseMenu/Quit]:
+	for menu_button in [$PauseMenu/Resume, $PauseMenu/Quit]:
 		ButtonStyle.apply(menu_button)
 	$PauseMenu/Resume.pressed.connect(_resume)
-	$PauseMenu/Character.pressed.connect(_open_character)
-	$PauseMenu/Inventory.pressed.connect(_open_inventory)
 	$PauseMenu/Quit.pressed.connect(_quit_run)
+	ButtonStyle.apply(character_box)
+	ButtonStyle.apply(inventory_box)
+	character_box.pressed.connect(_toggle_character)
+	inventory_box.pressed.connect(_toggle_inventory)
 	ButtonStyle.apply($PauseMenu/Cheat)
 	$PauseMenu/Cheat.pressed.connect(_open_cheat)
 	ButtonStyle.apply($PauseMenu/SettingsButton)
@@ -123,6 +125,12 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("potion_2"):
 		_use_quick_potion(1)
 		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("character"):
+		_toggle_character()
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("inventory"):
+		_toggle_inventory()
+		get_viewport().set_input_as_handled()
 
 
 func show_player(_current: int, _maximum: int) -> void:
@@ -168,15 +176,21 @@ func _resume() -> void:
 	_apply_open_state()
 
 
-func _open_character() -> void:
-	character_tab = true
-	pause_view = PauseView.SHEET
+func _toggle_character() -> void:
+	if pause_view == PauseView.SHEET and character_tab:
+		pause_view = PauseView.CLOSED
+	else:
+		character_tab = true
+		pause_view = PauseView.SHEET
 	_apply_open_state()
 
 
-func _open_inventory() -> void:
-	character_tab = false
-	pause_view = PauseView.SHEET
+func _toggle_inventory() -> void:
+	if pause_view == PauseView.SHEET and not character_tab:
+		pause_view = PauseView.CLOSED
+	else:
+		character_tab = false
+		pause_view = PauseView.SHEET
 	_apply_open_state()
 
 
@@ -232,8 +246,10 @@ func _apply_open_state() -> void:
 	$CheatPage.visible = pause_view == PauseView.CHEAT
 	$Settings.visible = pause_view == PauseView.SETTINGS
 	$BackButton.visible = pause_view == PauseView.SHEET or pause_view == PauseView.CHEAT
-	character_tab_button.visible = false
-	inventory_tab_button.visible = false
+	var show_boxes := pause_view != PauseView.CHEAT and pause_view != PauseView.SETTINGS
+	character_box.visible = show_boxes
+	inventory_box.visible = show_boxes
+	_refresh_sheet_keys()
 	gear_button.text = "Close" if open else "Menu"
 	get_tree().paused = open
 	_apply_tab()
@@ -246,19 +262,38 @@ func _apply_tab() -> void:
 		return
 	character_page.visible = character_tab
 	inventory_page.visible = not character_tab
-	_paint_tab(character_tab_button, character_tab)
-	_paint_tab(inventory_tab_button, not character_tab)
+	_paint_sheet_button(character_box, pause_view == PauseView.SHEET and character_tab)
+	_paint_sheet_button(inventory_box, pause_view == PauseView.SHEET and not character_tab)
 	_close_hand_choice()
 	_hover_button = null
 	_hover_time = 0.0
 	_hide_tip()
 
 
-func _paint_tab(button: Button, active: bool) -> void:
+func _refresh_sheet_keys() -> void:
+	_set_box_key(character_box, "character")
+	_set_box_key(inventory_box, "inventory")
+
+
+func _set_box_key(button: Button, action: String) -> void:
+	var label := button.get_node("Key") as Label
+	var shown := ""
+	for event in Keybinds.bindings(action):
+		if event is InputEventKey:
+			shown = OS.get_keycode_string(event.physical_keycode)
+			break
+	label.text = shown
+
+
+func _paint_sheet_button(button: Button, active: bool) -> void:
 	if active:
 		ButtonStyle.apply_selected(button)
 	else:
 		ButtonStyle.apply(button)
+	var color := Color(1, 1, 1, 1) if active else Color(0, 0, 0, 1)
+	for node_name in ["Key", "Caption"]:
+		var label := button.get_node(node_name) as Label
+		label.add_theme_color_override("font_color", color)
 
 
 func _refresh_gear() -> void:
