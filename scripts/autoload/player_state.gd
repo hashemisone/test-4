@@ -34,6 +34,8 @@ var sell_kept := false
 var confirm_sell_equipped := true
 var pending_scene := ""
 var in_shop := false
+var shop_market := false
+var shop_refreshes := 0
 var shop_stock: Array[ItemData] = []
 
 const COIN_SAVE := "user://coins.json"
@@ -212,7 +214,30 @@ func set_confirm_sell_equipped(enabled: bool) -> void:
 	_save_options()
 
 
-func roll_shop_stock() -> void:
+func roll_shop_stock(kept: bool = false) -> void:
+	shop_market = kept
+	shop_refreshes = 0
+	_fill_shop_stock()
+
+
+func shop_refresh_cost() -> int:
+	return shop_refreshes * 5
+
+
+func refresh_shop_stock() -> bool:
+	var cost := shop_refresh_cost()
+	if cost > 0 and coins < cost:
+		return false
+	if cost > 0:
+		coins -= cost
+		_save_coins()
+	shop_refreshes += 1
+	_fill_shop_stock()
+	changed.emit()
+	return true
+
+
+func _fill_shop_stock() -> void:
 	shop_stock.clear()
 	var guard := 0
 	while shop_stock.size() < 4 and guard < 40:
@@ -220,7 +245,7 @@ func roll_shop_stock() -> void:
 		var item := Loot.roll(1)
 		if item.is_coin():
 			continue
-		item.permanent = false
+		item.permanent = shop_market
 		shop_stock.append(item)
 
 

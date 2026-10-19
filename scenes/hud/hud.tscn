@@ -1022,7 +1022,7 @@ vertical_alignment = 1
 
 [node name="HoverTip" type="Panel" parent="."]
 visible = false
-z_index = 20
+z_index = 30
 mouse_filter = 2
 offset_right = 110.0
 offset_bottom = 28.0

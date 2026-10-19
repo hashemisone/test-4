@@ -93,11 +93,16 @@ func _open_inventory() -> void:
 
 
 func _open_market() -> void:
+	$Panel.visible = false
 	$Levels.visible = false
 	$HubMenu.visible = false
+	$Settings.visible = false
+	$CheatPage.visible = false
+	$CheatBack.visible = false
+	$Market.visible = false
 	_show_level_actions(false)
-	$Market.visible = true
-	$Market.restock()
+	PlayerState.roll_shop_stock(true)
+	$HUD.open_market()
 
 
 func _open_sheet(character: bool) -> void:

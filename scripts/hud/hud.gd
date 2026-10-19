@@ -45,11 +45,18 @@ var _dont_ask: CheckButton
 var _buy_button: Button
 var _buy_root: Control
 var _buy_buttons: Array[Button] = []
+var _refresh_button: Button
+var _refresh_coin: TextureRect
+var _refresh_amount: Label
+var _market_back: Button
+var _market_open := false
 var _sell_button: Button
 var _sell_root: Control
 var _sell_grid: GridContainer
 var _sell_empty: Label
-var _equipped_check: CheckBox
+var _equipped_check: Button
+var _equipped_mark: ColorRect
+var _equipped_label: Label
 var _sell_buttons: Array[Button] = []
 var _sell_items: Array[ItemData] = []
 var _sell_equipped: Array[bool] = []
@@ -399,6 +406,7 @@ func _refresh_gear() -> void:
 		ButtonStyle.apply_item(_bag_buttons[index], item != null and item.rarity == ItemData.Rarity.UNCOMMON, item != null and item.permanent)
 	if _sell_root != null and _sell_root.visible:
 		call_deferred("_fill_sell")
+	_update_refresh()
 
 
 func _set_tip_item(button: Button, item: ItemData) -> void:
@@ -418,15 +426,21 @@ func setup_shop() -> void:
 	_sell_button = _shop_button("Sell", Vector2(460, 8), _toggle_sell)
 	_sell_button.name = "SellButton"
 	add_child(_sell_button)
+	if hub:
+		_market_back = _shop_button("Back", Vector2(548, 8), _close_market)
+		_market_back.name = "MarketBack"
+		add_child(_market_back)
+		_market_back.visible = false
 	_buy_root = _shop_layer()
-	var buy_panel := _shop_panel(Vector2(148, 64), Vector2(344, 150))
+	var buy_panel := _shop_panel(Vector2(60, 64), Vector2(520, 150))
 	_buy_root.add_child(buy_panel)
 	_add_panel_title(buy_panel, "For sale")
-	var buy_close := _shop_button("Close", Vector2(252, 8), _close_buy)
+	_build_refresh(buy_panel)
+	var buy_close := _shop_button("Close", Vector2(428, 8), _close_buy)
 	buy_panel.add_child(buy_close)
 	for index in 4:
 		var button := Button.new()
-		button.position = Vector2(16 + index * 82, 44)
+		button.position = Vector2(96 + index * 82, 44)
 		button.size = Vector2(70, 90)
 		_add_price_tag(button)
 		_add_icon(button)
@@ -437,16 +451,33 @@ func setup_shop() -> void:
 	var sell_panel := _shop_panel(Vector2(60, 52), Vector2(520, 248))
 	_sell_root.add_child(sell_panel)
 	_add_panel_title(sell_panel, "Sell")
-	_equipped_check = CheckBox.new()
-	_equipped_check.text = "Show equipped"
-	_equipped_check.position = Vector2(96, 8)
-	_equipped_check.size = Vector2(170, 28)
-	_equipped_check.add_theme_font_size_override("font_size", 13)
+	_equipped_check = Button.new()
+	_equipped_check.position = Vector2(96, 13)
+	_equipped_check.size = Vector2(18, 18)
+	_equipped_check.toggle_mode = true
+	_equipped_check.text = ""
 	_equipped_check.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	for color_name in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color"]:
-		_equipped_check.add_theme_color_override(color_name, Color(0, 0, 0, 1))
+	_equipped_check.focus_mode = Control.FOCUS_NONE
+	for state_name in ["normal", "hover", "pressed", "hover_pressed", "focus", "disabled"]:
+		_equipped_check.add_theme_stylebox_override(state_name, _check_box_style())
+	_equipped_mark = ColorRect.new()
+	_equipped_mark.position = Vector2(4, 4)
+	_equipped_mark.size = Vector2(10, 10)
+	_equipped_mark.color = Color(0, 0, 0, 1)
+	_equipped_mark.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_equipped_mark.visible = false
+	_equipped_check.add_child(_equipped_mark)
 	_equipped_check.toggled.connect(_on_show_equipped)
 	sell_panel.add_child(_equipped_check)
+	_equipped_label = Label.new()
+	_equipped_label.text = "Show equipped"
+	_equipped_label.position = Vector2(120, 8)
+	_equipped_label.size = Vector2(160, 28)
+	_equipped_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_equipped_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_equipped_label.add_theme_color_override("font_color", Color(0, 0, 0, 1))
+	_equipped_label.add_theme_font_size_override("font_size", 13)
+	sell_panel.add_child(_equipped_label)
 	var sell_close := _shop_button("Close", Vector2(428, 8), _close_sell)
 	sell_panel.add_child(sell_close)
 	var scroll := ScrollContainer.new()
@@ -487,7 +518,7 @@ func _shop_layer() -> Control:
 	var layer := Control.new()
 	layer.visible = false
 	layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	layer.z_index = 20
+	layer.z_index = 4
 	add_child(layer)
 	return layer
 
@@ -499,6 +530,109 @@ func _shop_panel(at: Vector2, box: Vector2) -> Panel:
 	panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	panel.add_theme_stylebox_override("panel", _menu_frame())
 	return panel
+
+
+func _build_refresh(panel: Panel) -> void:
+	_refresh_button = Button.new()
+	_refresh_button.name = "RefreshButton"
+	_refresh_button.position = Vector2(120, 8)
+	_refresh_button.size = Vector2(200, 28)
+	_refresh_button.text = ""
+	_refresh_button.focus_mode = Control.FOCUS_NONE
+	ButtonStyle.apply(_refresh_button)
+	_refresh_button.pressed.connect(_refresh_stock)
+	panel.add_child(_refresh_button)
+	var row := HBoxContainer.new()
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.position = Vector2(4, 2)
+	row.size = Vector2(192, 24)
+	row.add_theme_constant_override("separation", 4)
+	var word := Label.new()
+	word.text = "Refresh"
+	word.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	word.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	word.add_theme_color_override("font_color", Color(0, 0, 0, 1))
+	word.add_theme_font_size_override("font_size", 14)
+	row.add_child(word)
+	_refresh_coin = TextureRect.new()
+	_refresh_coin.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_refresh_coin.custom_minimum_size = Vector2(14, 14)
+	_refresh_coin.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_refresh_coin.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_refresh_coin.texture = COIN_TEXTURE
+	_refresh_coin.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(_refresh_coin)
+	_refresh_amount = Label.new()
+	_refresh_amount.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_refresh_amount.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_refresh_amount.add_theme_color_override("font_color", Color(0, 0, 0, 1))
+	_refresh_amount.add_theme_font_size_override("font_size", 14)
+	row.add_child(_refresh_amount)
+	_refresh_button.add_child(row)
+	_update_refresh()
+
+
+func _check_box_style() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(1, 1, 1, 1)
+	style.set_border_width_all(2)
+	style.border_color = Color(0, 0, 0, 1)
+	return style
+
+
+func _update_refresh() -> void:
+	if _refresh_amount == null:
+		return
+	var cost := PlayerState.shop_refresh_cost()
+	if cost <= 0:
+		_refresh_coin.visible = false
+		_refresh_amount.text = "Free"
+	else:
+		_refresh_coin.visible = true
+		_refresh_amount.text = str(cost)
+
+
+func _refresh_stock() -> void:
+	if not PlayerState.refresh_shop_stock():
+		return
+	_fill_buy()
+
+
+func open_market() -> void:
+	_market_open = true
+	visible = true
+	pause_view = PauseView.CLOSED
+	setup_shop()
+	_apply_open_state()
+	_show_market_chrome()
+	_set_show_equipped(false)
+	_close_sell()
+	_buy_root.visible = true
+	_fill_buy()
+
+
+func _show_market_chrome() -> void:
+	$CoinIcon.visible = true
+	$CoinLabel.visible = true
+	$Potion1.visible = true
+	$Potion2.visible = true
+	if _buy_button != null:
+		_buy_button.visible = true
+	if _sell_button != null:
+		_sell_button.visible = true
+	if _market_back != null:
+		_market_back.visible = true
+
+
+func _close_market() -> void:
+	_market_open = false
+	_close_buy()
+	_close_sell()
+	if _market_back != null:
+		_market_back.visible = false
+	visible = false
+	hub_closed.emit()
 
 
 func _add_panel_title(panel: Panel, title: String) -> void:
@@ -575,17 +709,18 @@ func _fill_buy() -> void:
 			_show_item_icon(button, null)
 			continue
 		button.visible = true
-		_set_price_tag(button, ShopPrices.buy_price(item, false))
+		_set_price_tag(button, ShopPrices.buy_price(item, PlayerState.shop_market))
 		_set_tip_item(button, item)
 		_show_item_icon(button, item)
 		ButtonStyle.apply_item(button, item.rarity == ItemData.Rarity.UNCOMMON, item.permanent)
+	_update_refresh()
 
 
 func _buy_stock(index: int) -> void:
 	if index < 0 or index >= PlayerState.shop_stock.size():
 		return
 	var item := PlayerState.shop_stock[index]
-	var price := ShopPrices.buy_price(item, false)
+	var price := ShopPrices.buy_price(item, PlayerState.shop_market)
 	if PlayerState.coins < price:
 		return
 	if not PlayerState.add_item(item):
@@ -600,9 +735,7 @@ func _toggle_sell() -> void:
 		_close_sell()
 		return
 	_close_buy()
-	_show_equipped = false
-	if _equipped_check != null:
-		_equipped_check.set_pressed_no_signal(false)
+	_set_show_equipped(false)
 	_sell_root.visible = true
 	_fill_sell()
 
@@ -623,9 +756,26 @@ func _close_sell() -> void:
 		_close_destroy()
 
 
+func _set_show_equipped(enabled: bool) -> void:
+	_show_equipped = enabled
+	if _equipped_check == null:
+		return
+	_equipped_check.set_pressed_no_signal(enabled)
+	if _equipped_mark != null:
+		_equipped_mark.visible = enabled
+
+
 func _on_show_equipped(enabled: bool) -> void:
 	_show_equipped = enabled
+	if _equipped_mark != null:
+		_equipped_mark.visible = enabled
 	_fill_sell()
+
+
+func _shop_lists(item: ItemData) -> bool:
+	if item == null or item.is_coin():
+		return false
+	return item.permanent == PlayerState.shop_market
 
 
 func _fill_sell() -> void:
@@ -639,20 +789,20 @@ func _fill_sell() -> void:
 	_sell_items.clear()
 	_sell_equipped.clear()
 	for item in PlayerState.inventory:
-		if item == null or item.is_coin():
+		if not _shop_lists(item):
 			continue
 		_sell_items.append(item)
 		_sell_equipped.append(false)
 	if _show_equipped:
 		for slot in PlayerState._all_slots():
 			var worn: ItemData = PlayerState.item_in_slot(slot)
-			if worn == null:
+			if not _shop_lists(worn):
 				continue
 			_sell_items.append(worn)
 			_sell_equipped.append(true)
 		for index in 2:
 			var potion: ItemData = PlayerState.quick_potion(index)
-			if potion == null:
+			if not _shop_lists(potion):
 				continue
 			_sell_items.append(potion)
 			_sell_equipped.append(true)
@@ -663,7 +813,7 @@ func _fill_sell() -> void:
 		_add_price_tag(button)
 		_add_icon(button)
 		var listed: ItemData = _sell_items[index]
-		_set_price_tag(button, ShopPrices.sell_price(listed, false))
+		_set_price_tag(button, ShopPrices.sell_price(listed, PlayerState.shop_market))
 		_set_tip_item(button, listed)
 		_show_item_icon(button, listed)
 		ButtonStyle.apply_item(button, listed.rarity == ItemData.Rarity.UNCOMMON, listed.permanent)
@@ -960,7 +1110,7 @@ func _build_destroy_ui() -> void:
 	_destroy_shade.color = Color(0, 0, 0, 0.25)
 	_destroy_shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_destroy_shade.visible = false
-	_destroy_shade.z_index = 40
+	_destroy_shade.z_index = 48
 	_destroy_shade.gui_input.connect(_close_destroy_event)
 	add_child(_destroy_shade)
 	_destroy_menu = _small_panel()
@@ -1029,7 +1179,7 @@ func _build_destroy_ui() -> void:
 func _small_panel() -> Panel:
 	var panel := Panel.new()
 	panel.visible = false
-	panel.z_index = 41
+	panel.z_index = 50
 	panel.size = Vector2(160, 128)
 	panel.add_theme_stylebox_override("panel", _menu_frame())
 	add_child(panel)
@@ -1137,7 +1287,7 @@ func _finish_sale(item: ItemData) -> void:
 	if item == null:
 		_close_destroy()
 		return
-	var price := ShopPrices.sell_price(item, false)
+	var price := ShopPrices.sell_price(item, PlayerState.shop_market)
 	PlayerState.destroy_item(item, 1)
 	PlayerState.add_coins(price)
 	_close_destroy()

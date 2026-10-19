@@ -9,7 +9,7 @@ static func buy_price(item: ItemData, kept_market: bool) -> int:
 	elif item.rarity == ItemData.Rarity.UNCOMMON:
 		price = 8
 	if kept_market:
-		price *= 3
+		price *= 10
 	return price
 
 
@@ -20,5 +20,5 @@ static func sell_price(item: ItemData, kept_market: bool) -> int:
 	elif item.rarity == ItemData.Rarity.UNCOMMON:
 		price = 4
 	if kept_market:
-		price *= 3
+		price *= 10
 	return price
