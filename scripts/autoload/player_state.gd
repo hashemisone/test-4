@@ -236,12 +236,15 @@ func prepare_market() -> void:
 		_save_market()
 		return
 	shop_stock.clear()
+	var seen: Array[String] = []
 	for entry in _market_packed:
 		if typeof(entry) != TYPE_DICTIONARY:
 			continue
 		var item := _unpack_item(entry)
-		if item != null:
-			shop_stock.append(item)
+		if item == null or seen.has(_item_name(item)):
+			continue
+		seen.append(_item_name(item))
+		shop_stock.append(item)
 
 
 func shop_refresh_cost() -> int:
@@ -292,14 +295,25 @@ func _market_free_ready() -> bool:
 
 func _fill_shop_stock() -> void:
 	shop_stock.clear()
+	var seen: Array[String] = []
 	var guard := 0
-	while shop_stock.size() < 4 and guard < 40:
+	while shop_stock.size() < 4 and guard < 80:
 		guard += 1
 		var item := Loot.roll(1)
 		if item.is_coin():
 			continue
+		var kind := _item_name(item)
+		if seen.has(kind):
+			continue
 		item.permanent = shop_market
 		shop_stock.append(item)
+		seen.append(kind)
+
+
+func _item_name(item: ItemData) -> String:
+	if item.display_name != "":
+		return item.display_name
+	return item.kind_id()
 
 
 func spend_coins(amount: int) -> bool:

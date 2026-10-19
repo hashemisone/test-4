@@ -92,6 +92,17 @@ func _show_title() -> void:
 	_show_level_actions(false)
 
 
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_echo() or not $Levels.visible:
+		return
+	if event.is_action_pressed("character"):
+		_open_sheet(true)
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("inventory"):
+		_open_sheet(false)
+		get_viewport().set_input_as_handled()
+
+
 func _toggle_hub_menu() -> void:
 	$HubMenu.visible = not $HubMenu.visible
 

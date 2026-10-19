@@ -846,6 +846,7 @@ func _fill_sell() -> void:
 		var listed: ItemData = _sell_items[index]
 		_set_price_tag(button, ShopPrices.sell_price(listed, PlayerState.shop_market))
 		_set_stack_count(button, listed.stack)
+		_set_equipped_sign(button, _sell_equipped[index])
 		_set_tip_item(button, listed)
 		_show_item_icon(button, listed)
 		ButtonStyle.apply_item(button, listed.rarity == ItemData.Rarity.UNCOMMON, listed.permanent)
@@ -875,6 +876,28 @@ func _set_stack_count(button: Button, stack: int) -> void:
 		button.add_child(count)
 	count.text = "x%d" % stack
 	count.visible = true
+
+
+func _set_equipped_sign(button: Button, equipped: bool) -> void:
+	var sign := button.get_node_or_null("Worn") as Label
+	if not equipped:
+		if sign != null:
+			sign.visible = false
+		return
+	if sign == null:
+		sign = Label.new()
+		sign.name = "Worn"
+		sign.text = "E"
+		sign.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		sign.position = Vector2(2, 1)
+		sign.size = Vector2(16, 16)
+		sign.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+		sign.add_theme_font_size_override("font_size", 12)
+		sign.add_theme_color_override("font_color", Color(0, 0, 0, 1))
+		sign.add_theme_color_override("font_outline_color", Color(1, 1, 1, 1))
+		sign.add_theme_constant_override("outline_size", 4)
+		button.add_child(sign)
+	sign.visible = true
 
 
 func _sell_listed(index: int) -> void:

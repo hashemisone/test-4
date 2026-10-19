@@ -28,14 +28,19 @@ func _ready() -> void:
 
 func restock() -> void:
 	_stock.clear()
+	var seen: Array[String] = []
 	var guard := 0
-	while _stock.size() < 4 and guard < 40:
+	while _stock.size() < 4 and guard < 80:
 		guard += 1
 		var item := Loot.roll(1)
 		if item.is_coin():
 			continue
+		var kind := item.display_name if item.display_name != "" else item.kind_id()
+		if seen.has(kind):
+			continue
 		item.permanent = market
 		_stock.append(item)
+		seen.append(kind)
 	_refresh()
 
 
