@@ -5,6 +5,7 @@ const SPRITE_HALF := Vector2(55.5, 45.5)
 const TURN_MIN := 2.5
 const TURN_MAX := 4.0
 const NOTICE_TIME := 0.4
+const LOSE_SIGHT_TIME := 10.0
 
 
 static func random_facing() -> bool:
@@ -20,6 +21,47 @@ static func facing_player(sprite: AnimatedSprite2D, enemy_x: float, player_x: fl
 	if absf(dx) <= 8.0:
 		return true
 	return sprite.flip_h == (dx < 0.0)
+
+
+static func decide(sprite: AnimatedSprite2D, enemy_x: float, player: Node2D, delta: float, alert: bool, notice_left: float, lost_left: float) -> Dictionary:
+	var visible := on_screen(sprite)
+	var player_ok: bool = player != null and player.has_method("is_alive") and player.is_alive()
+	var attacking := false
+	if not player_ok:
+		alert = false
+		notice_left = -1.0
+		lost_left = -1.0
+	elif visible and alert:
+		attacking = true
+		lost_left = -1.0
+	elif visible and facing_player(sprite, enemy_x, player.global_position.x):
+		if notice_left < 0.0:
+			notice_left = NOTICE_TIME
+		else:
+			notice_left = maxf(notice_left - delta, 0.0)
+		if notice_left <= 0.001:
+			alert = true
+			attacking = true
+			notice_left = -1.0
+			lost_left = -1.0
+	elif alert:
+		if lost_left < 0.0:
+			lost_left = LOSE_SIGHT_TIME
+		lost_left = maxf(lost_left - delta, 0.0)
+		if lost_left <= 0.001:
+			alert = false
+			lost_left = -1.0
+			notice_left = -1.0
+		else:
+			attacking = true
+	else:
+		notice_left = -1.0
+	return {
+		"attacking": attacking,
+		"alert": alert,
+		"notice_left": notice_left,
+		"lost_left": lost_left,
+	}
 
 
 static func on_screen(sprite: CanvasItem) -> bool:
