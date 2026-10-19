@@ -99,10 +99,10 @@ func _add_icon(button: Button) -> void:
 	icon.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	button.add_child(icon)
 	icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	icon.offset_left = 8
-	icon.offset_top = 6
-	icon.offset_right = -8
-	icon.offset_bottom = -18
+	icon.offset_left = 4
+	icon.offset_top = 3
+	icon.offset_right = -4
+	icon.offset_bottom = -9
 	icon.hide()
 
 
