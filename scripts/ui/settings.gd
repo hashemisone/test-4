@@ -69,7 +69,7 @@ func _build() -> void:
 	_home.add_child(home_back)
 	_add_title(_options, "Options")
 	_confirm_switch = _add_option_row("Destroy confirm", 78, _on_confirm_toggled)
-	_sell_switch = _add_option_row("Sell kept items", 126, _on_sell_toggled)
+	_sell_switch = _add_option_row("Sell kept confirm", 126, _on_sell_toggled)
 	_equipped_switch = _add_option_row("Sell equipped confirm", 174, _on_equipped_toggled)
 	var options_back := _menu_button("Back")
 	options_back.position = Vector2(180, 232)
@@ -130,9 +130,9 @@ func _on_confirm_toggled(enabled: bool) -> void:
 
 
 func _on_sell_toggled(enabled: bool) -> void:
-	if enabled == PlayerState.sell_kept:
+	if enabled == PlayerState.confirm_sell_kept:
 		return
-	PlayerState.set_sell_kept(enabled)
+	PlayerState.set_confirm_sell_kept(enabled)
 
 
 func _on_equipped_toggled(enabled: bool) -> void:
@@ -143,7 +143,7 @@ func _on_equipped_toggled(enabled: bool) -> void:
 
 func _refresh_confirm_button() -> void:
 	_confirm_switch.set_pressed_no_signal(PlayerState.confirm_destroy)
-	_sell_switch.set_pressed_no_signal(PlayerState.sell_kept)
+	_sell_switch.set_pressed_no_signal(PlayerState.confirm_sell_kept)
 	_equipped_switch.set_pressed_no_signal(PlayerState.confirm_sell_equipped)
 
 

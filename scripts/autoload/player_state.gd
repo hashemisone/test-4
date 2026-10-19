@@ -30,7 +30,7 @@ var quick_attack: ItemData
 var coins := 0
 var return_to_levels := false
 var confirm_destroy := true
-var sell_kept := false
+var confirm_sell_kept := true
 var confirm_sell_equipped := true
 var pending_scene := ""
 var in_shop := false
@@ -210,8 +210,8 @@ func set_confirm_destroy(enabled: bool) -> void:
 	_save_options()
 
 
-func set_sell_kept(enabled: bool) -> void:
-	sell_kept = enabled
+func set_confirm_sell_kept(enabled: bool) -> void:
+	confirm_sell_kept = enabled
 	_save_options()
 
 
@@ -248,7 +248,7 @@ func shop_refresh_cost() -> int:
 	if shop_market:
 		if _market_free_ready():
 			return 0
-		return (market_paid + 1) * 5
+		return (market_paid + 1) * 25
 	return shop_refreshes * 5
 
 
@@ -279,10 +279,15 @@ func remember_market_stock() -> void:
 		_save_market()
 
 
-func _market_free_ready() -> bool:
+func market_free_seconds_left() -> int:
 	if market_free_at <= 0:
-		return true
-	return int(Time.get_unix_time_from_system()) - market_free_at >= MARKET_FREE_WAIT
+		return 0
+	var left := MARKET_FREE_WAIT - (int(Time.get_unix_time_from_system()) - market_free_at)
+	return maxi(left, 0)
+
+
+func _market_free_ready() -> bool:
+	return market_free_seconds_left() <= 0
 
 
 func _fill_shop_stock() -> void:
@@ -334,7 +339,7 @@ func _forget_item(item: ItemData) -> void:
 
 func _load_options() -> void:
 	confirm_destroy = true
-	sell_kept = false
+	confirm_sell_kept = true
 	confirm_sell_equipped = true
 	if not FileAccess.file_exists(OPTIONS_SAVE):
 		return
@@ -346,8 +351,8 @@ func _load_options() -> void:
 		return
 	if parsed.has("confirm_destroy"):
 		confirm_destroy = bool(parsed["confirm_destroy"])
-	if parsed.has("sell_kept"):
-		sell_kept = bool(parsed["sell_kept"])
+	if parsed.has("confirm_sell_kept"):
+		confirm_sell_kept = bool(parsed["confirm_sell_kept"])
 	if parsed.has("confirm_sell_equipped"):
 		confirm_sell_equipped = bool(parsed["confirm_sell_equipped"])
 
@@ -392,7 +397,7 @@ func _save_options() -> void:
 		return
 	file.store_string(JSON.stringify({
 		"confirm_destroy": confirm_destroy,
-		"sell_kept": sell_kept,
+		"confirm_sell_kept": confirm_sell_kept,
 		"confirm_sell_equipped": confirm_sell_equipped,
 	}))
 

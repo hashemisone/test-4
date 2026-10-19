@@ -48,6 +48,8 @@ var _buy_buttons: Array[Button] = []
 var _refresh_button: Button
 var _refresh_coin: TextureRect
 var _refresh_amount: Label
+var _refresh_timer: Label
+var _modal_root: Control
 var _market_back: Button
 var _market_open := false
 var _sell_button: Button
@@ -71,7 +73,7 @@ var _sell_all_pay: Label
 var _sell_typed_pay: Label
 var _sell_typed_coin: TextureRect
 var _sell_popup: Panel
-var _sell_switch: CheckButton
+var _kept_dont: CheckButton
 var _equipped_popup: Panel
 var _equipped_dont: CheckButton
 var _tip_off: Panel
@@ -580,6 +582,16 @@ func _build_refresh(panel: Panel) -> void:
 	_refresh_amount.add_theme_font_size_override("font_size", 14)
 	row.add_child(_refresh_amount)
 	_refresh_button.add_child(row)
+	_refresh_timer = Label.new()
+	_refresh_timer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_refresh_timer.position = Vector2(328, 8)
+	_refresh_timer.size = Vector2(96, 28)
+	_refresh_timer.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_refresh_timer.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_refresh_timer.add_theme_color_override("font_color", Color(0, 0, 0, 1))
+	_refresh_timer.add_theme_font_size_override("font_size", 14)
+	_refresh_timer.visible = false
+	panel.add_child(_refresh_timer)
 	_update_refresh()
 
 
@@ -601,6 +613,12 @@ func _update_refresh() -> void:
 	else:
 		_refresh_coin.visible = true
 		_refresh_amount.text = str(cost)
+	if _refresh_timer == null:
+		return
+	var left := PlayerState.market_free_seconds_left() if PlayerState.shop_market else 0
+	_refresh_timer.visible = left > 0
+	if left > 0:
+		_refresh_timer.text = "%d:%02d" % [left / 60, left % 60]
 
 
 func _refresh_stock() -> void:
@@ -888,7 +906,7 @@ func _open_sell_amount() -> void:
 	_sell_amount_edit.text = ""
 	_show_sell_payouts()
 	_sell_amount_menu.visible = true
-	_destroy_shade.visible = true
+	_show_shade(true)
 	_sell_amount_menu.position = Vector2(160, 80)
 	_hide_tip()
 
@@ -933,18 +951,18 @@ func _continue_sale(amount: int = 1) -> void:
 		_equipped_dont.button_pressed = false
 		_equipped_popup.visible = true
 		_equipped_popup.position = Vector2(170, 90)
-		_destroy_shade.visible = true
+		_show_shade(true)
 		return
 	_offer_kept_or_finish(_sale_item)
 
 
 func _offer_kept_or_finish(item: ItemData) -> void:
-	if item != null and item.permanent and not PlayerState.sell_kept:
+	if item != null and item.permanent and PlayerState.confirm_sell_kept:
 		_sale_item = item
+		_kept_dont.button_pressed = false
 		_sell_popup.visible = true
-		_sell_switch.set_pressed_no_signal(false)
-		_destroy_shade.visible = true
-		_sell_popup.position = Vector2(160, 100)
+		_show_shade(true)
+		_sell_popup.position = Vector2(170, 90)
 		return
 	_finish_sale(item, _sale_amount)
 
@@ -963,7 +981,7 @@ func _decline_equipped_sale() -> void:
 	_equipped_dont.button_pressed = false
 	_sale_item = null
 	if not _destroy_menu.visible and (_sell_popup == null or not _sell_popup.visible):
-		_destroy_shade.visible = false
+		_show_shade(false)
 
 
 func _build_sell_amount_menu() -> void:
@@ -1089,34 +1107,61 @@ func _build_equipped_popup() -> void:
 	_equipped_popup.add_child(no)
 
 
+func _confirm_kept_sale() -> void:
+	if _kept_dont.button_pressed:
+		PlayerState.set_confirm_sell_kept(false)
+	var item := _sale_item
+	var amount := _sale_amount
+	_sell_popup.visible = false
+	_kept_dont.button_pressed = false
+	_finish_sale(item, amount)
+
+
+func _decline_kept_sale() -> void:
+	_sell_popup.visible = false
+	_kept_dont.button_pressed = false
+	_sale_item = null
+	_show_shade(false)
+
+
 func _build_sell_popup() -> void:
 	_sell_popup = _small_panel()
-	_sell_popup.size = Vector2(320, 120)
+	_sell_popup.size = Vector2(300, 156)
 	var ask := Label.new()
 	ask.position = Vector2(12, 12)
-	ask.size = Vector2(296, 28)
-	ask.text = "This is a kept item."
+	ask.size = Vector2(276, 28)
+	ask.text = "Sell this kept item?"
 	ask.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	ask.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	ask.add_theme_font_size_override("font_size", 16)
 	ask.add_theme_color_override("font_color", Color(0, 0, 0, 1))
 	_sell_popup.add_child(ask)
-	var sell_label := Label.new()
-	sell_label.position = Vector2(24, 52)
-	sell_label.size = Vector2(200, 28)
-	sell_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	sell_label.text = "Sell kept items"
-	sell_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	sell_label.add_theme_color_override("font_color", Color(0, 0, 0, 1))
-	sell_label.add_theme_font_size_override("font_size", 16)
-	_sell_popup.add_child(sell_label)
-	_sell_switch = CheckButton.new()
-	_sell_switch.position = Vector2(236, 54)
-	_sell_switch.custom_minimum_size = Vector2(24, 24)
-	_sell_switch.size = Vector2(24, 24)
-	_sell_switch.text = ""
-	_sell_switch.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	_sell_switch.toggled.connect(_on_shop_sell_switch)
-	_sell_popup.add_child(_sell_switch)
+	var dont := Label.new()
+	dont.position = Vector2(20, 48)
+	dont.size = Vector2(190, 28)
+	dont.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	dont.text = "Don't ask again"
+	dont.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	dont.add_theme_color_override("font_color", Color(0, 0, 0, 1))
+	dont.add_theme_font_size_override("font_size", 14)
+	_sell_popup.add_child(dont)
+	_kept_dont = CheckButton.new()
+	_kept_dont.position = Vector2(220, 50)
+	_kept_dont.custom_minimum_size = Vector2(24, 24)
+	_kept_dont.size = Vector2(24, 24)
+	_kept_dont.text = ""
+	_kept_dont.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	_sell_popup.add_child(_kept_dont)
+	var yes := _destroy_button("Yes")
+	yes.position = Vector2(16, 100)
+	yes.size = Vector2(126, 40)
+	yes.pressed.connect(_confirm_kept_sale)
+	_sell_popup.add_child(yes)
+	var no := _destroy_button("No")
+	no.position = Vector2(158, 100)
+	no.size = Vector2(126, 40)
+	no.pressed.connect(_decline_kept_sale)
+	_sell_popup.add_child(no)
 
 
 func _process(delta: float) -> void:
@@ -1289,13 +1334,22 @@ func _clicked_item(kind: String, which: int) -> ItemData:
 
 
 func _build_destroy_ui() -> void:
+	_modal_root = Control.new()
+	_modal_root.name = "ModalRoot"
+	_modal_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_modal_root.z_index = 100
+	_modal_root.visible = false
+	_modal_root.position = Vector2.ZERO
+	_modal_root.size = Vector2(640, 360)
+	add_child(_modal_root)
 	_destroy_shade = ColorRect.new()
 	_destroy_shade.color = Color(0, 0, 0, 0.25)
 	_destroy_shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_destroy_shade.visible = false
-	_destroy_shade.z_index = 48
+	_destroy_shade.z_index = 0
+	_destroy_shade.mouse_filter = Control.MOUSE_FILTER_STOP
 	_destroy_shade.gui_input.connect(_close_destroy_event)
-	add_child(_destroy_shade)
+	_modal_root.add_child(_destroy_shade)
 	_destroy_menu = _small_panel()
 	_destroy_menu.size = Vector2(160, 48)
 	var destroy := _destroy_button("Destroy")
@@ -1362,10 +1416,11 @@ func _build_destroy_ui() -> void:
 func _small_panel() -> Panel:
 	var panel := Panel.new()
 	panel.visible = false
-	panel.z_index = 50
+	panel.z_index = 1
+	panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	panel.size = Vector2(160, 128)
 	panel.add_theme_stylebox_override("panel", _menu_frame())
-	add_child(panel)
+	_modal_root.add_child(panel)
 	return panel
 
 
@@ -1396,7 +1451,7 @@ func _open_destroy(item: ItemData) -> void:
 	_confirm_menu.visible = false
 	_destroy_menu.size = Vector2(160, 48)
 	_destroy_menu.visible = true
-	_destroy_shade.visible = true
+	_show_shade(true)
 	_place_popup(_destroy_menu, get_viewport().get_mouse_position())
 
 
@@ -1480,24 +1535,12 @@ func _finish_sale(item: ItemData, amount: int) -> void:
 	_close_destroy()
 
 
-func _on_shop_sell_switch(enabled: bool) -> void:
-	if not enabled:
-		return
-	PlayerState.set_sell_kept(true)
-	var item := _sale_item
-	var amount := _sale_amount
-	_close_destroy()
-	if item != null:
-		_finish_sale(item, amount)
-
-
 func _close_destroy() -> void:
 	_destroy_item = null
 	_destroy_amount = 0
 	_sale_item = null
 	_sale_amount = 1
 	_sale_equipped = false
-	_destroy_shade.visible = false
 	_destroy_menu.visible = false
 	_amount_menu.visible = false
 	_confirm_menu.visible = false
@@ -1507,6 +1550,17 @@ func _close_destroy() -> void:
 		_equipped_popup.visible = false
 	if _sell_amount_menu != null:
 		_sell_amount_menu.visible = false
+	_show_shade(false)
+
+
+func _show_shade(show: bool) -> void:
+	if _destroy_shade != null:
+		_destroy_shade.visible = show
+	if _modal_root == null:
+		return
+	_modal_root.visible = show
+	if show:
+		_modal_root.move_to_front()
 
 
 func _use_quick_potion(index: int) -> void:

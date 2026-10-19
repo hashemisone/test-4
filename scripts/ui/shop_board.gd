@@ -200,7 +200,7 @@ func _sell(item: ItemData) -> void:
 	if item == null or not PlayerState.inventory.has(item):
 		_refresh()
 		return
-	if item.permanent and not PlayerState.sell_kept:
+	if item.permanent and PlayerState.confirm_sell_kept:
 		_pending = item
 		_popup.visible = true
 		_sell_switch.set_pressed_no_signal(false)
@@ -211,7 +211,7 @@ func _sell(item: ItemData) -> void:
 func _on_sell_switch(enabled: bool) -> void:
 	if not enabled:
 		return
-	PlayerState.set_sell_kept(enabled)
+	PlayerState.set_confirm_sell_kept(false)
 	var item := _pending
 	_close_popup()
 	if item != null:
