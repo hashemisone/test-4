@@ -297,6 +297,7 @@ func _refresh_gear() -> void:
 	if health_label == null:
 		return
 	health_label.text = "Health %d/%d" % [PlayerState.current_health, PlayerState.max_health()]
+	_refresh_health_bar()
 	melee_label.text = "Melee %d" % PlayerState.melee_damage()
 	bolt_label.text = "Bolt %d" % PlayerState.bolt_damage()
 	_refresh_buffs()
@@ -478,6 +479,37 @@ func _refresh_quick_potions() -> void:
 		var caption := buttons[index].get_node("Caption") as Label
 		caption.text = _stack_name(item) if item != null else keys[index]
 		_show_item_icon(buttons[index], item)
+
+
+func _refresh_health_bar() -> void:
+	var bar := get_node_or_null("PlayerHealth") as Control
+	if bar == null:
+		return
+	var maximum := maxi(PlayerState.max_health(), 1)
+	var current := clampi(PlayerState.current_health, 0, maximum)
+	var bonus := clampi(PlayerState.bonus_health, 0, maximum)
+	var outer := bar.size
+	if outer.x < 1.0:
+		outer = Vector2(bar.offset_right - bar.offset_left, bar.offset_bottom - bar.offset_top)
+	var inset := 2.0
+	var width := outer.x - inset * 2.0
+	var height := outer.y - inset * 2.0
+	var fill_w := clampf(width * float(current) / float(maximum), 0.0, width)
+	var bonus_w := clampf(width * float(bonus) / float(maximum), 0.0, width)
+	var bonus_x := inset + width - bonus_w
+	var bonus_rect := bar.get_node("Bonus") as ColorRect
+	bonus_rect.position = Vector2(bonus_x, inset)
+	bonus_rect.size = Vector2(bonus_w, height)
+	var fill := bar.get_node("Fill") as ColorRect
+	fill.position = Vector2(inset, inset)
+	fill.size = Vector2(fill_w, height)
+	var bright := bar.get_node("BonusFill") as ColorRect
+	var overlap := clampf(fill_w - (width - bonus_w), 0.0, bonus_w)
+	bright.position = Vector2(bonus_x, inset)
+	bright.size = Vector2(overlap, height)
+	bright.visible = overlap > 0.5
+	var value := bar.get_node("Value") as Label
+	value.text = "%d/%d" % [current, maximum]
 
 
 func _refresh_buffs() -> void:

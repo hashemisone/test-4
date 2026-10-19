@@ -28,6 +28,14 @@ border_width_right = 3
 border_width_bottom = 3
 border_color = Color(0, 0, 0, 1)
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_health"]
+bg_color = Color(0.18, 0.05, 0.05, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 0, 0, 1)
+
 [node name="HUD" type="CanvasLayer"]
 process_mode = 3
 script = ExtResource("1_hud")
@@ -62,12 +70,61 @@ theme_override_colors/font_color = Color(0.95, 0.91, 0.84, 1)
 theme_override_font_sizes/font_size = 14
 text = "Shooter 22/22"
 
+[node name="PlayerHealth" type="Panel" parent="."]
+offset_left = 16.0
+offset_top = 68.0
+offset_right = 196.0
+offset_bottom = 86.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_health")
+
+[node name="Bonus" type="ColorRect" parent="PlayerHealth"]
+offset_left = 134.0
+offset_top = 2.0
+offset_right = 178.0
+offset_bottom = 16.0
+mouse_filter = 2
+color = Color(0.95, 0.55, 0.32, 1)
+
+[node name="Fill" type="ColorRect" parent="PlayerHealth"]
+offset_left = 2.0
+offset_top = 2.0
+offset_right = 130.0
+offset_bottom = 16.0
+mouse_filter = 2
+color = Color(0.78, 0.13, 0.12, 1)
+
+[node name="BonusFill" type="ColorRect" parent="PlayerHealth"]
+visible = false
+offset_left = 134.0
+offset_top = 2.0
+offset_right = 178.0
+offset_bottom = 16.0
+mouse_filter = 2
+color = Color(1, 0.78, 0.32, 1)
+
+[node name="Value" type="Label" parent="PlayerHealth"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 11
+text = "100/100"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="BuffLabel" type="Label" parent="."]
 visible = false
 offset_left = 16.0
-offset_top = 68.0
+offset_top = 90.0
 offset_right = 320.0
-offset_bottom = 108.0
+offset_bottom = 130.0
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.98, 0.86, 0.45, 1)
 theme_override_font_sizes/font_size = 14
