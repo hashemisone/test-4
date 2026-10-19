@@ -23,6 +23,7 @@ enum Rarity { COMMON, UNCOMMON }
 @export var buff_health: int = 0
 @export var buff_melee: int = 0
 @export var buff_seconds: float = 0.0
+@export var coin_amount: int = 0
 var stack := 1
 
 
@@ -87,6 +88,10 @@ func slot_title() -> String:
 
 func is_potion() -> bool:
 	return heal_amount > 0 or buff_health > 0 or buff_melee > 0
+
+
+func is_coin() -> bool:
+	return coin_amount > 0
 
 
 func bonus_text() -> String:

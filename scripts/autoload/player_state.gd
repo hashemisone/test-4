@@ -27,9 +27,13 @@ var bonus_melee := 0
 var bonus_melee_left := 0.0
 var quick_health: ItemData
 var quick_attack: ItemData
+var coins := 0
+
+const COIN_SAVE := "user://coins.json"
 
 
 func _ready() -> void:
+	_load_coins()
 	start_run()
 
 
@@ -124,9 +128,39 @@ func use_quick_potion(index: int) -> void:
 	changed.emit()
 
 
+func add_coins(amount: int) -> void:
+	if amount <= 0:
+		return
+	coins += amount
+	_save_coins()
+	changed.emit()
+
+
+func _load_coins() -> void:
+	coins = 0
+	if not FileAccess.file_exists(COIN_SAVE):
+		return
+	var file := FileAccess.open(COIN_SAVE, FileAccess.READ)
+	if file == null:
+		return
+	var parsed = JSON.parse_string(file.get_as_text())
+	if typeof(parsed) == TYPE_DICTIONARY and parsed.has("coins"):
+		coins = maxi(int(parsed["coins"]), 0)
+
+
+func _save_coins() -> void:
+	var file := FileAccess.open(COIN_SAVE, FileAccess.WRITE)
+	if file == null:
+		return
+	file.store_string(JSON.stringify({"coins": coins}))
+
+
 func add_item(item: ItemData) -> bool:
 	if item == null:
 		return false
+	if item.is_coin():
+		add_coins(item.coin_amount)
+		return true
 	if item.is_potion():
 		for held in inventory:
 			if held.is_potion() and held.kind_id() == item.kind_id():

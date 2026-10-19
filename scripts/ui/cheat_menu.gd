@@ -80,6 +80,8 @@ func _sorted_items(potions: bool, rarity: ItemData.Rarity) -> Array[ItemData]:
 	for family in Loot.FAMILIES:
 		for path in family:
 			var item := load(path) as ItemData
+			if item.is_coin():
+				continue
 			if item.is_potion() != potions:
 				continue
 			if not potions and item.rarity != rarity:

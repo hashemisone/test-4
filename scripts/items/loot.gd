@@ -19,6 +19,7 @@ const FAMILIES: Array = [
 	["res://resources/items/gloves.tres", "res://resources/items/gloves_uncommon.tres"],
 	["res://resources/items/health_potion.tres"],
 	["res://resources/items/attack_potion.tres"],
+	["res://resources/items/coin.tres"],
 ]
 
 
@@ -27,7 +28,10 @@ static func roll(enemy_level: int) -> ItemData:
 	var family: Array = FAMILIES[randi() % FAMILIES.size()]
 	var path: String = family[mini(rarity, family.size() - 1)]
 	var template := load(path) as ItemData
-	return template.roll_copy()
+	var copy := template.roll_copy()
+	if copy.is_coin():
+		copy.coin_amount = randi_range(1, 3)
+	return copy
 
 
 static func _roll_rarity(enemy_level: int) -> int:

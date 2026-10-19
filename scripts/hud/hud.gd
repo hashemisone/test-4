@@ -272,6 +272,9 @@ func _refresh_gear() -> void:
 		return
 	health_label.text = "Health %d/%d" % [PlayerState.current_health, PlayerState.max_health()]
 	_refresh_health_bar()
+	var coin_label := get_node_or_null("CoinLabel") as Label
+	if coin_label != null:
+		coin_label.text = str(PlayerState.coins)
 	melee_label.text = "Melee %d" % PlayerState.melee_damage()
 	bolt_label.text = "Bolt %d" % PlayerState.bolt_damage()
 	_refresh_buffs()
