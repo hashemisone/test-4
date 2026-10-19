@@ -576,22 +576,22 @@ func _build_destroy_ui() -> void:
 	ask.add_theme_color_override("font_color", Color(0, 0, 0, 1))
 	ask.add_theme_font_size_override("font_size", 18)
 	_confirm_menu.add_child(ask)
-	_dont_ask = CheckButton.new()
-	_dont_ask.position = Vector2(28, 50)
-	_dont_ask.custom_minimum_size = Vector2(24, 24)
-	_dont_ask.size = Vector2(24, 24)
-	_dont_ask.text = ""
-	_dont_ask.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	_confirm_menu.add_child(_dont_ask)
 	var dont_label := Label.new()
-	dont_label.position = Vector2(56, 48)
-	dont_label.size = Vector2(200, 28)
+	dont_label.position = Vector2(28, 48)
+	dont_label.size = Vector2(180, 28)
 	dont_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	dont_label.text = "Don't ask again"
 	dont_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	dont_label.add_theme_color_override("font_color", Color(0, 0, 0, 1))
 	dont_label.add_theme_font_size_override("font_size", 14)
 	_confirm_menu.add_child(dont_label)
+	_dont_ask = CheckButton.new()
+	_dont_ask.position = Vector2(214, 50)
+	_dont_ask.custom_minimum_size = Vector2(24, 24)
+	_dont_ask.size = Vector2(24, 24)
+	_dont_ask.text = ""
+	_dont_ask.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	_confirm_menu.add_child(_dont_ask)
 	var yes := _destroy_button("Yes")
 	yes.position = Vector2(16, 96)
 	yes.size = Vector2(116, 40)

@@ -5,7 +5,7 @@ signal closed
 var _home: Control
 var _keys: Control
 var _options: Control
-var _confirm_button: Button
+var _confirm_switch: CheckButton
 var _list: VBoxContainer
 var _prompt: Label
 var _listening := false
@@ -66,11 +66,23 @@ func _build() -> void:
 	home_back.pressed.connect(_leave)
 	_home.add_child(home_back)
 	_add_title(_options, "Options")
-	_confirm_button = _menu_button("Destroy confirm: On")
-	_confirm_button.position = Vector2(130, 120)
-	_confirm_button.size = Vector2(300, 40)
-	_confirm_button.pressed.connect(_toggle_confirm)
-	_options.add_child(_confirm_button)
+	var confirm_label := Label.new()
+	confirm_label.position = Vector2(80, 120)
+	confirm_label.size = Vector2(280, 32)
+	confirm_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	confirm_label.text = "Destroy confirm"
+	confirm_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	confirm_label.add_theme_color_override("font_color", Color(0, 0, 0, 1))
+	confirm_label.add_theme_font_size_override("font_size", 16)
+	_options.add_child(confirm_label)
+	_confirm_switch = CheckButton.new()
+	_confirm_switch.position = Vector2(372, 122)
+	_confirm_switch.custom_minimum_size = Vector2(24, 24)
+	_confirm_switch.size = Vector2(24, 24)
+	_confirm_switch.text = ""
+	_confirm_switch.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	_confirm_switch.toggled.connect(_on_confirm_toggled)
+	_options.add_child(_confirm_switch)
 	var options_back := _menu_button("Back")
 	options_back.position = Vector2(180, 192)
 	options_back.pressed.connect(show_home)
@@ -123,13 +135,14 @@ func _show_options() -> void:
 	_refresh_confirm_button()
 
 
-func _toggle_confirm() -> void:
-	PlayerState.set_confirm_destroy(not PlayerState.confirm_destroy)
-	_refresh_confirm_button()
+func _on_confirm_toggled(enabled: bool) -> void:
+	if enabled == PlayerState.confirm_destroy:
+		return
+	PlayerState.set_confirm_destroy(enabled)
 
 
 func _refresh_confirm_button() -> void:
-	_confirm_button.text = "Destroy confirm: On" if PlayerState.confirm_destroy else "Destroy confirm: Off"
+	_confirm_switch.set_pressed_no_signal(PlayerState.confirm_destroy)
 
 
 func _show_keys() -> void:
