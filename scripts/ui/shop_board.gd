@@ -234,25 +234,11 @@ func _close_popup() -> void:
 
 
 func _buy_price(item: ItemData) -> int:
-	var price := 4
-	if item.is_potion():
-		price = 3
-	elif item.rarity == ItemData.Rarity.UNCOMMON:
-		price = 8
-	if market:
-		price *= 3
-	return price
+	return ShopPrices.buy_price(item, market)
 
 
 func _sell_price(item: ItemData) -> int:
-	var price := 2
-	if item.is_potion():
-		price = 1
-	elif item.rarity == ItemData.Rarity.UNCOMMON:
-		price = 4
-	if market:
-		price *= 3
-	return price
+	return ShopPrices.sell_price(item, market)
 
 
 func _stack_name(item: ItemData) -> String:

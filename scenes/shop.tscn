@@ -1,11 +1,11 @@
 [gd_scene format=3 uid="uid://m4n7p2r8t5v1x"]
 
 [ext_resource type="Script" path="res://scripts/shop/shop_room.gd" id="1_room"]
-[ext_resource type="Texture2D" path="res://art/background/dungeon.png" id="2_bg"]
+[ext_resource type="Texture2D" path="res://art/background/shop.png" id="2_bg"]
+[ext_resource type="PackedScene" path="res://scenes/hud/hud.tscn" id="7_hud"]
 [ext_resource type="TileSet" path="res://resources/tiles/dungeon_tileset.tres" id="3_tiles"]
 [ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="4_player"]
 [ext_resource type="PackedScene" path="res://scenes/exit/exit.tscn" id="5_exit"]
-[ext_resource type="Script" path="res://scripts/ui/shop_board.gd" id="6_shop"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_floor"]
 size = Vector2(640, 40)
@@ -61,7 +61,4 @@ position = Vector2(420, 320)
 position = Vector2(580, 240)
 to_pending = true
 
-[node name="ShopUI" type="CanvasLayer" parent="."]
-
-[node name="ShopBoard" type="Control" parent="ShopUI"]
-script = ExtResource("6_shop")
+[node name="HUD" parent="." instance=ExtResource("7_hud")]

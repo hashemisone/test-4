@@ -32,6 +32,7 @@ func _on_body_entered(body: Node) -> void:
 	_used = true
 	get_tree().paused = false
 	if to_pending:
+		PlayerState.in_shop = false
 		var path := PlayerState.pending_scene
 		PlayerState.pending_scene = ""
 		if path == "":
@@ -42,6 +43,7 @@ func _on_body_entered(body: Node) -> void:
 		get_tree().call_deferred("change_scene_to_file", path)
 		return
 	if next_scene != null:
+		PlayerState.in_shop = true
 		PlayerState.pending_scene = next_scene.resource_path
 		get_tree().call_deferred("change_scene_to_file", "res://scenes/shop.tscn")
 		return

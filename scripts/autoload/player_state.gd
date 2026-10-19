@@ -32,6 +32,8 @@ var return_to_levels := false
 var confirm_destroy := true
 var sell_kept := false
 var pending_scene := ""
+var in_shop := false
+var shop_stock: Array[ItemData] = []
 
 const COIN_SAVE := "user://coins.json"
 const GEAR_SAVE := "user://permanent.json"
@@ -202,6 +204,18 @@ func set_confirm_destroy(enabled: bool) -> void:
 func set_sell_kept(enabled: bool) -> void:
 	sell_kept = enabled
 	_save_options()
+
+
+func roll_shop_stock() -> void:
+	shop_stock.clear()
+	var guard := 0
+	while shop_stock.size() < 4 and guard < 40:
+		guard += 1
+		var item := Loot.roll(1)
+		if item.is_coin():
+			continue
+		item.permanent = false
+		shop_stock.append(item)
 
 
 func spend_coins(amount: int) -> bool:

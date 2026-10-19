@@ -41,6 +41,12 @@ var _amount_menu: Panel
 var _confirm_menu: Panel
 var _amount_edit: LineEdit
 var _dont_ask: CheckButton
+var _buy_button: Button
+var _buy_root: Control
+var _buy_buttons: Array[Button] = []
+var _sell_choice: Button
+var _sell_popup: Panel
+var _sell_switch: CheckButton
 var _tip_off: Panel
 
 
@@ -95,6 +101,9 @@ func _ready() -> void:
 	$Potion1.gui_input.connect(_item_gui.bind("potion", 0))
 	$Potion2.gui_input.connect(_item_gui.bind("potion", 1))
 	_build_destroy_ui()
+	_build_sell_popup()
+	if PlayerState.in_shop:
+		setup_shop()
 	_build_hand_choice()
 	_apply_open_state()
 
@@ -233,6 +242,7 @@ func _open_settings() -> void:
 
 func _quit_run() -> void:
 	get_tree().paused = false
+	PlayerState.in_shop = false
 	PlayerState.end_run()
 	PlayerState.return_to_levels = true
 	get_tree().change_scene_to_file("res://scenes/menu.tscn")
@@ -263,6 +273,8 @@ func _equip_from_bag(index: int) -> void:
 
 func _apply_open_state() -> void:
 	var open := pause_view != PauseView.CLOSED
+	if open:
+		_close_buy()
 	dimmer.visible = open
 	$PauseMenu.visible = pause_view == PauseView.MENU
 	gear_panel.visible = pause_view == PauseView.SHEET
@@ -381,8 +393,144 @@ func _set_tip_item(button: Button, item: ItemData) -> void:
 		button.set_meta("tip_item", item)
 
 
+func setup_shop() -> void:
+	if _buy_button != null:
+		return
+	_buy_button = Button.new()
+	_buy_button.text = "Buy"
+	_buy_button.position = Vector2(460, 8)
+	_buy_button.size = Vector2(80, 28)
+	_buy_button.add_theme_font_size_override("font_size", 14)
+	ButtonStyle.apply(_buy_button)
+	_buy_button.pressed.connect(_toggle_buy)
+	add_child(_buy_button)
+	_buy_root = Control.new()
+	_buy_root.visible = false
+	_buy_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_buy_root.z_index = 20
+	add_child(_buy_root)
+	var panel := Panel.new()
+	panel.position = Vector2(148, 64)
+	panel.size = Vector2(344, 150)
+	panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	panel.add_theme_stylebox_override("panel", _menu_frame())
+	_buy_root.add_child(panel)
+	var title := Label.new()
+	title.text = "For sale"
+	title.position = Vector2(12, 8)
+	title.size = Vector2(160, 24)
+	title.add_theme_color_override("font_color", Color(0, 0, 0, 1))
+	title.add_theme_font_size_override("font_size", 16)
+	panel.add_child(title)
+	var close := Button.new()
+	close.text = "Close"
+	close.position = Vector2(252, 8)
+	close.size = Vector2(80, 28)
+	close.add_theme_font_size_override("font_size", 14)
+	ButtonStyle.apply(close)
+	close.pressed.connect(_close_buy)
+	panel.add_child(close)
+	for index in 4:
+		var button := Button.new()
+		button.position = Vector2(16 + index * 82, 44)
+		button.size = Vector2(70, 90)
+		var caption := Label.new()
+		caption.name = "Caption"
+		caption.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		caption.offset_top = 58
+		caption.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		caption.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		caption.add_theme_font_size_override("font_size", 11)
+		caption.add_theme_color_override("font_color", Color(0, 0, 0, 1))
+		button.add_child(caption)
+		_add_icon(button)
+		button.pressed.connect(_buy_stock.bind(index))
+		panel.add_child(button)
+		_buy_buttons.append(button)
+
+
+func _toggle_buy() -> void:
+	if _buy_root.visible:
+		_close_buy()
+		return
+	_buy_root.visible = true
+	_fill_buy()
+
+
+func _close_buy() -> void:
+	if _buy_root == null:
+		return
+	_buy_root.visible = false
+	_hide_tip()
+
+
+func _fill_buy() -> void:
+	for index in _buy_buttons.size():
+		var button := _buy_buttons[index]
+		var item: ItemData = null
+		if index < PlayerState.shop_stock.size():
+			item = PlayerState.shop_stock[index]
+		var caption := button.get_node("Caption") as Label
+		if item == null:
+			button.visible = false
+			_set_tip_item(button, null)
+			_show_item_icon(button, null)
+			continue
+		button.visible = true
+		caption.text = str(ShopPrices.buy_price(item, false))
+		_set_tip_item(button, item)
+		_show_item_icon(button, item)
+		ButtonStyle.apply_item(button, item.rarity == ItemData.Rarity.UNCOMMON, item.permanent)
+
+
+func _buy_stock(index: int) -> void:
+	if index < 0 or index >= PlayerState.shop_stock.size():
+		return
+	var item := PlayerState.shop_stock[index]
+	var price := ShopPrices.buy_price(item, false)
+	if PlayerState.coins < price:
+		return
+	if not PlayerState.add_item(item):
+		return
+	PlayerState.spend_coins(price)
+	PlayerState.shop_stock.remove_at(index)
+	_fill_buy()
+
+
+func _build_sell_popup() -> void:
+	_sell_popup = _small_panel()
+	_sell_popup.size = Vector2(320, 120)
+	var ask := Label.new()
+	ask.position = Vector2(12, 12)
+	ask.size = Vector2(296, 28)
+	ask.text = "This is a kept item."
+	ask.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	ask.add_theme_font_size_override("font_size", 16)
+	ask.add_theme_color_override("font_color", Color(0, 0, 0, 1))
+	_sell_popup.add_child(ask)
+	var sell_label := Label.new()
+	sell_label.position = Vector2(24, 52)
+	sell_label.size = Vector2(200, 28)
+	sell_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	sell_label.text = "Sell kept items"
+	sell_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	sell_label.add_theme_color_override("font_color", Color(0, 0, 0, 1))
+	sell_label.add_theme_font_size_override("font_size", 16)
+	_sell_popup.add_child(sell_label)
+	_sell_switch = CheckButton.new()
+	_sell_switch.position = Vector2(236, 54)
+	_sell_switch.custom_minimum_size = Vector2(24, 24)
+	_sell_switch.size = Vector2(24, 24)
+	_sell_switch.text = ""
+	_sell_switch.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	_sell_switch.toggled.connect(_on_shop_sell_switch)
+	_sell_popup.add_child(_sell_switch)
+
+
 func _process(delta: float) -> void:
-	if pause_view != PauseView.SHEET or (_choice_root != null and _choice_root.visible):
+	var buying := _buy_root != null and _buy_root.visible
+	if (pause_view != PauseView.SHEET and not buying) or (_choice_root != null and _choice_root.visible):
 		_hover_button = null
 		_hover_time = 0.0
 		_hide_tip()
@@ -403,6 +551,11 @@ func _process(delta: float) -> void:
 
 
 func _button_under_mouse() -> Button:
+	if _buy_root != null and _buy_root.visible:
+		for buy_button in _buy_buttons:
+			if buy_button.visible and _contains_mouse(buy_button):
+				return buy_button
+		return null
 	var buttons: Array[Button] = _slot_buttons if character_tab else _bag_buttons
 	for button in buttons:
 		if button.is_visible_in_tree() and _contains_mouse(button):
@@ -546,6 +699,11 @@ func _build_destroy_ui() -> void:
 	var destroy := _destroy_button("Destroy")
 	destroy.pressed.connect(_click_destroy)
 	_destroy_menu.add_child(destroy)
+	_sell_choice = _destroy_button("Sell")
+	_sell_choice.position = Vector2(8, 46)
+	_sell_choice.visible = false
+	_sell_choice.pressed.connect(_click_sell)
+	_destroy_menu.add_child(_sell_choice)
 	_amount_menu = _small_panel()
 	var one := _destroy_button("Destroy 1")
 	one.position = Vector2(8, 8)
@@ -639,6 +797,9 @@ func _open_destroy(item: ItemData) -> void:
 	_dont_ask.button_pressed = false
 	_amount_menu.visible = false
 	_confirm_menu.visible = false
+	var selling := PlayerState.in_shop
+	_sell_choice.visible = selling
+	_destroy_menu.size = Vector2(160, 90 if selling else 48)
 	_destroy_menu.visible = true
 	_destroy_shade.visible = true
 	_place_popup(_destroy_menu, get_viewport().get_mouse_position())
@@ -710,6 +871,40 @@ func _close_destroy_event(event: InputEvent) -> void:
 		_close_destroy()
 
 
+func _click_sell() -> void:
+	var item := _destroy_item
+	if item == null:
+		_close_destroy()
+		return
+	if item.permanent and not PlayerState.sell_kept:
+		_destroy_menu.visible = false
+		_amount_menu.visible = false
+		_sell_popup.visible = true
+		_sell_switch.set_pressed_no_signal(false)
+		return
+	_finish_sale(item)
+
+
+func _finish_sale(item: ItemData) -> void:
+	if item == null:
+		_close_destroy()
+		return
+	var price := ShopPrices.sell_price(item, false)
+	PlayerState.destroy_item(item, 1)
+	PlayerState.add_coins(price)
+	_close_destroy()
+
+
+func _on_shop_sell_switch(enabled: bool) -> void:
+	if not enabled:
+		return
+	PlayerState.set_sell_kept(true)
+	var item := _destroy_item
+	_close_destroy()
+	if item != null:
+		_finish_sale(item)
+
+
 func _close_destroy() -> void:
 	_destroy_item = null
 	_destroy_amount = 0
@@ -717,6 +912,8 @@ func _close_destroy() -> void:
 	_destroy_menu.visible = false
 	_amount_menu.visible = false
 	_confirm_menu.visible = false
+	if _sell_popup != null:
+		_sell_popup.visible = false
 
 
 func _use_quick_potion(index: int) -> void:
