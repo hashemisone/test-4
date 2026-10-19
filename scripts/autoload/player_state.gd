@@ -30,6 +30,8 @@ var quick_attack: ItemData
 var coins := 0
 var return_to_levels := false
 var confirm_destroy := true
+var sell_kept := false
+var pending_scene := ""
 
 const COIN_SAVE := "user://coins.json"
 const GEAR_SAVE := "user://permanent.json"
@@ -197,6 +199,20 @@ func set_confirm_destroy(enabled: bool) -> void:
 	_save_options()
 
 
+func set_sell_kept(enabled: bool) -> void:
+	sell_kept = enabled
+	_save_options()
+
+
+func spend_coins(amount: int) -> bool:
+	if amount <= 0 or coins < amount:
+		return false
+	coins -= amount
+	_save_coins()
+	changed.emit()
+	return true
+
+
 func destroy_item(item: ItemData, amount: int) -> void:
 	if item == null:
 		return
@@ -225,21 +241,29 @@ func _forget_item(item: ItemData) -> void:
 
 func _load_options() -> void:
 	confirm_destroy = true
+	sell_kept = false
 	if not FileAccess.file_exists(OPTIONS_SAVE):
 		return
 	var file := FileAccess.open(OPTIONS_SAVE, FileAccess.READ)
 	if file == null:
 		return
 	var parsed = JSON.parse_string(file.get_as_text())
-	if typeof(parsed) == TYPE_DICTIONARY and parsed.has("confirm_destroy"):
+	if typeof(parsed) != TYPE_DICTIONARY:
+		return
+	if parsed.has("confirm_destroy"):
 		confirm_destroy = bool(parsed["confirm_destroy"])
+	if parsed.has("sell_kept"):
+		sell_kept = bool(parsed["sell_kept"])
 
 
 func _save_options() -> void:
 	var file := FileAccess.open(OPTIONS_SAVE, FileAccess.WRITE)
 	if file == null:
 		return
-	file.store_string(JSON.stringify({"confirm_destroy": confirm_destroy}))
+	file.store_string(JSON.stringify({
+		"confirm_destroy": confirm_destroy,
+		"sell_kept": sell_kept,
+	}))
 
 
 func add_coins(amount: int) -> void:

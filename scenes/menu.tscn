@@ -4,6 +4,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/settings.tscn" id="2_settings"]
 [ext_resource type="Script" path="res://scripts/ui/cheat_menu.gd" id="3_cheat"]
 [ext_resource type="PackedScene" path="res://scenes/hud/hud.tscn" id="4_hud"]
+[ext_resource type="Script" path="res://scripts/ui/shop_board.gd" id="5_market"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
 bg_color = Color(1, 1, 1, 1)
@@ -206,9 +207,9 @@ text = "5"
 [node name="LevelMenu" type="Button" parent="."]
 visible = false
 layout_mode = 0
-offset_left = 128.0
+offset_left = 108.0
 offset_top = 292.0
-offset_right = 248.0
+offset_right = 208.0
 offset_bottom = 332.0
 theme_override_font_sizes/font_size = 16
 text = "Menu"
@@ -216,9 +217,9 @@ text = "Menu"
 [node name="LevelInventory" type="Button" parent="."]
 visible = false
 layout_mode = 0
-offset_left = 260.0
+offset_left = 216.0
 offset_top = 292.0
-offset_right = 380.0
+offset_right = 316.0
 offset_bottom = 332.0
 theme_override_font_sizes/font_size = 16
 text = "Inventory"
@@ -226,12 +227,22 @@ text = "Inventory"
 [node name="LevelCharacter" type="Button" parent="."]
 visible = false
 layout_mode = 0
-offset_left = 392.0
+offset_left = 324.0
 offset_top = 292.0
-offset_right = 512.0
+offset_right = 424.0
 offset_bottom = 332.0
 theme_override_font_sizes/font_size = 16
 text = "Character"
+
+[node name="LevelMarket" type="Button" parent="."]
+visible = false
+layout_mode = 0
+offset_left = 432.0
+offset_top = 292.0
+offset_right = 532.0
+offset_bottom = 332.0
+theme_override_font_sizes/font_size = 16
+text = "Market"
 
 [node name="HubMenu" type="Panel" parent="."]
 visible = false
@@ -321,6 +332,11 @@ horizontal_scroll_mode = 0
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 4
+
+[node name="Market" type="Control" parent="."]
+visible = false
+script = ExtResource("5_market")
+market = true
 
 [node name="HUD" parent="." instance=ExtResource("4_hud")]
 visible = false

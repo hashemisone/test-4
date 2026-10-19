@@ -16,6 +16,7 @@ func _ready() -> void:
 	ButtonStyle.apply($LevelMenu)
 	ButtonStyle.apply($LevelInventory)
 	ButtonStyle.apply($LevelCharacter)
+	ButtonStyle.apply($LevelMarket)
 	for hub_button in [$HubMenu/SettingsButton, $HubMenu/Cheat, $HubMenu/Quit, $HubMenu/Close]:
 		ButtonStyle.apply(hub_button)
 	for number in 5:
@@ -32,6 +33,8 @@ func _ready() -> void:
 	$LevelMenu.pressed.connect(_toggle_hub_menu)
 	$LevelInventory.pressed.connect(_open_inventory)
 	$LevelCharacter.pressed.connect(_open_character)
+	$LevelMarket.pressed.connect(_open_market)
+	$Market.closed.connect(_show_levels)
 	$HubMenu/SettingsButton.pressed.connect(_show_settings_from_levels)
 	$HubMenu/Cheat.pressed.connect(_show_cheat_from_levels)
 	$HubMenu/Quit.pressed.connect(_on_quit)
@@ -50,6 +53,7 @@ func _show_levels() -> void:
 	$CheatPage.visible = false
 	$CheatBack.visible = false
 	$HUD.visible = false
+	$Market.visible = false
 	_show_level_actions(true)
 	_return_to_levels = false
 
@@ -58,6 +62,7 @@ func _show_level_actions(show: bool) -> void:
 	$LevelMenu.visible = show
 	$LevelInventory.visible = show
 	$LevelCharacter.visible = show
+	$LevelMarket.visible = show
 
 
 func _show_title() -> void:
@@ -71,6 +76,7 @@ func _show_title() -> void:
 	$CheatPage.visible = false
 	$CheatBack.visible = false
 	$HUD.visible = false
+	$Market.visible = false
 	_show_level_actions(false)
 
 
@@ -86,9 +92,18 @@ func _open_inventory() -> void:
 	_open_sheet(false)
 
 
+func _open_market() -> void:
+	$Levels.visible = false
+	$HubMenu.visible = false
+	_show_level_actions(false)
+	$Market.visible = true
+	$Market.restock()
+
+
 func _open_sheet(character: bool) -> void:
 	$Levels.visible = false
 	$HubMenu.visible = false
+	$Market.visible = false
 	_show_level_actions(false)
 	$HUD.open_hub_sheet(character)
 
@@ -107,6 +122,7 @@ func _show_cheat() -> void:
 	$Panel.visible = false
 	$Levels.visible = false
 	$HubMenu.visible = false
+	$Market.visible = false
 	_show_level_actions(false)
 	$Settings.visible = false
 	$CheatPage.visible = true
@@ -128,6 +144,7 @@ func _show_settings() -> void:
 	$Panel.visible = false
 	$Levels.visible = false
 	$HubMenu.visible = false
+	$Market.visible = false
 	_show_level_actions(false)
 	$Settings.visible = true
 	$Settings.show_home()

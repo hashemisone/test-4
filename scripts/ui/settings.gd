@@ -6,6 +6,7 @@ var _home: Control
 var _keys: Control
 var _options: Control
 var _confirm_switch: CheckButton
+var _sell_switch: CheckButton
 var _list: VBoxContainer
 var _prompt: Label
 var _listening := false
@@ -83,6 +84,23 @@ func _build() -> void:
 	_confirm_switch.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	_confirm_switch.toggled.connect(_on_confirm_toggled)
 	_options.add_child(_confirm_switch)
+	var sell_label := Label.new()
+	sell_label.position = Vector2(80, 164)
+	sell_label.size = Vector2(280, 32)
+	sell_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	sell_label.text = "Sell kept items"
+	sell_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	sell_label.add_theme_color_override("font_color", Color(0, 0, 0, 1))
+	sell_label.add_theme_font_size_override("font_size", 16)
+	_options.add_child(sell_label)
+	_sell_switch = CheckButton.new()
+	_sell_switch.position = Vector2(372, 166)
+	_sell_switch.custom_minimum_size = Vector2(24, 24)
+	_sell_switch.size = Vector2(24, 24)
+	_sell_switch.text = ""
+	_sell_switch.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	_sell_switch.toggled.connect(_on_sell_toggled)
+	_options.add_child(_sell_switch)
 	var options_back := _menu_button("Back")
 	options_back.position = Vector2(180, 192)
 	options_back.pressed.connect(show_home)
@@ -141,8 +159,15 @@ func _on_confirm_toggled(enabled: bool) -> void:
 	PlayerState.set_confirm_destroy(enabled)
 
 
+func _on_sell_toggled(enabled: bool) -> void:
+	if enabled == PlayerState.sell_kept:
+		return
+	PlayerState.set_sell_kept(enabled)
+
+
 func _refresh_confirm_button() -> void:
 	_confirm_switch.set_pressed_no_signal(PlayerState.confirm_destroy)
+	_sell_switch.set_pressed_no_signal(PlayerState.sell_kept)
 
 
 func _show_keys() -> void:
