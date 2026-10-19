@@ -101,10 +101,10 @@ mouse_filter = 2
 
 [node name="HelmetButton" type="Button" parent="GearPanel/CharacterPage"]
 layout_mode = 0
-offset_left = 50.0
+offset_left = 66.0
 offset_top = 16.0
-offset_right = 78.0
-offset_bottom = 44.0
+offset_right = 108.0
+offset_bottom = 58.0
 theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
 theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
 theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
@@ -134,9 +134,9 @@ autowrap_mode = 3
 [node name="TrinketButton" type="Button" parent="GearPanel/CharacterPage"]
 layout_mode = 0
 offset_left = 18.0
-offset_top = 48.0
-offset_right = 46.0
-offset_bottom = 76.0
+offset_top = 64.0
+offset_right = 60.0
+offset_bottom = 106.0
 theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
 theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
 theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
@@ -165,10 +165,10 @@ autowrap_mode = 3
 
 [node name="ArmorButton" type="Button" parent="GearPanel/CharacterPage"]
 layout_mode = 0
-offset_left = 50.0
-offset_top = 48.0
-offset_right = 78.0
-offset_bottom = 76.0
+offset_left = 66.0
+offset_top = 64.0
+offset_right = 108.0
+offset_bottom = 106.0
 theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
 theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
 theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
@@ -197,10 +197,10 @@ autowrap_mode = 3
 
 [node name="CapeButton" type="Button" parent="GearPanel/CharacterPage"]
 layout_mode = 0
-offset_left = 82.0
-offset_top = 48.0
-offset_right = 110.0
-offset_bottom = 76.0
+offset_left = 114.0
+offset_top = 64.0
+offset_right = 156.0
+offset_bottom = 106.0
 theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
 theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
 theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
@@ -230,9 +230,9 @@ autowrap_mode = 3
 [node name="BraceletButton" type="Button" parent="GearPanel/CharacterPage"]
 layout_mode = 0
 offset_left = 18.0
-offset_top = 80.0
-offset_right = 46.0
-offset_bottom = 108.0
+offset_top = 112.0
+offset_right = 60.0
+offset_bottom = 154.0
 theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
 theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
 theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
@@ -261,10 +261,10 @@ autowrap_mode = 3
 
 [node name="PantsButton" type="Button" parent="GearPanel/CharacterPage"]
 layout_mode = 0
-offset_left = 50.0
-offset_top = 80.0
-offset_right = 78.0
-offset_bottom = 108.0
+offset_left = 66.0
+offset_top = 112.0
+offset_right = 108.0
+offset_bottom = 154.0
 theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
 theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
 theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
@@ -293,10 +293,10 @@ autowrap_mode = 3
 
 [node name="GlovesButton" type="Button" parent="GearPanel/CharacterPage"]
 layout_mode = 0
-offset_left = 82.0
-offset_top = 80.0
-offset_right = 110.0
-offset_bottom = 108.0
+offset_left = 114.0
+offset_top = 112.0
+offset_right = 156.0
+offset_bottom = 154.0
 theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
 theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
 theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
@@ -326,9 +326,9 @@ autowrap_mode = 3
 [node name="SwordButton" type="Button" parent="GearPanel/CharacterPage"]
 layout_mode = 0
 offset_left = 18.0
-offset_top = 112.0
-offset_right = 46.0
-offset_bottom = 140.0
+offset_top = 160.0
+offset_right = 60.0
+offset_bottom = 202.0
 theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
 theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
 theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
@@ -357,10 +357,10 @@ autowrap_mode = 3
 
 [node name="BootsButton" type="Button" parent="GearPanel/CharacterPage"]
 layout_mode = 0
-offset_left = 50.0
-offset_top = 112.0
-offset_right = 78.0
-offset_bottom = 140.0
+offset_left = 66.0
+offset_top = 160.0
+offset_right = 108.0
+offset_bottom = 202.0
 theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
 theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
 theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
@@ -389,10 +389,10 @@ autowrap_mode = 3
 
 [node name="OffhandButton" type="Button" parent="GearPanel/CharacterPage"]
 layout_mode = 0
-offset_left = 82.0
-offset_top = 112.0
-offset_right = 110.0
-offset_bottom = 140.0
+offset_left = 114.0
+offset_top = 160.0
+offset_right = 156.0
+offset_bottom = 202.0
 theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
 theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
 theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
@@ -469,8 +469,8 @@ mouse_filter = 2
 layout_mode = 0
 offset_left = 180.0
 offset_top = 8.0
-offset_right = 208.0
-offset_bottom = 36.0
+offset_right = 222.0
+offset_bottom = 50.0
 theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
 theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
 theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
@@ -498,10 +498,10 @@ vertical_alignment = 1
 
 [node name="Slot1" type="Button" parent="GearPanel/InventoryPage"]
 layout_mode = 0
-offset_left = 212.0
+offset_left = 228.0
 offset_top = 8.0
-offset_right = 240.0
-offset_bottom = 36.0
+offset_right = 270.0
+offset_bottom = 50.0
 theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
 theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
 theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
@@ -529,10 +529,10 @@ vertical_alignment = 1
 
 [node name="Slot2" type="Button" parent="GearPanel/InventoryPage"]
 layout_mode = 0
-offset_left = 244.0
+offset_left = 276.0
 offset_top = 8.0
-offset_right = 272.0
-offset_bottom = 36.0
+offset_right = 318.0
+offset_bottom = 50.0
 theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
 theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
 theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
@@ -560,10 +560,10 @@ vertical_alignment = 1
 
 [node name="Slot3" type="Button" parent="GearPanel/InventoryPage"]
 layout_mode = 0
-offset_left = 276.0
+offset_left = 324.0
 offset_top = 8.0
-offset_right = 304.0
-offset_bottom = 36.0
+offset_right = 366.0
+offset_bottom = 50.0
 theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
 theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
 theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
@@ -592,9 +592,9 @@ vertical_alignment = 1
 [node name="Slot4" type="Button" parent="GearPanel/InventoryPage"]
 layout_mode = 0
 offset_left = 180.0
-offset_top = 40.0
-offset_right = 208.0
-offset_bottom = 68.0
+offset_top = 56.0
+offset_right = 222.0
+offset_bottom = 98.0
 theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
 theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
 theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
@@ -622,10 +622,10 @@ vertical_alignment = 1
 
 [node name="Slot5" type="Button" parent="GearPanel/InventoryPage"]
 layout_mode = 0
-offset_left = 212.0
-offset_top = 40.0
-offset_right = 240.0
-offset_bottom = 68.0
+offset_left = 228.0
+offset_top = 56.0
+offset_right = 270.0
+offset_bottom = 98.0
 theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
 theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
 theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
@@ -653,10 +653,10 @@ vertical_alignment = 1
 
 [node name="Slot6" type="Button" parent="GearPanel/InventoryPage"]
 layout_mode = 0
-offset_left = 244.0
-offset_top = 40.0
-offset_right = 272.0
-offset_bottom = 68.0
+offset_left = 276.0
+offset_top = 56.0
+offset_right = 318.0
+offset_bottom = 98.0
 theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
 theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
 theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
@@ -684,10 +684,10 @@ vertical_alignment = 1
 
 [node name="Slot7" type="Button" parent="GearPanel/InventoryPage"]
 layout_mode = 0
-offset_left = 276.0
-offset_top = 40.0
-offset_right = 304.0
-offset_bottom = 68.0
+offset_left = 324.0
+offset_top = 56.0
+offset_right = 366.0
+offset_bottom = 98.0
 theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
 theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
 theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
@@ -716,9 +716,9 @@ vertical_alignment = 1
 [node name="Slot8" type="Button" parent="GearPanel/InventoryPage"]
 layout_mode = 0
 offset_left = 180.0
-offset_top = 72.0
-offset_right = 208.0
-offset_bottom = 100.0
+offset_top = 104.0
+offset_right = 222.0
+offset_bottom = 146.0
 theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
 theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
 theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
@@ -746,10 +746,10 @@ vertical_alignment = 1
 
 [node name="Slot9" type="Button" parent="GearPanel/InventoryPage"]
 layout_mode = 0
-offset_left = 212.0
-offset_top = 72.0
-offset_right = 240.0
-offset_bottom = 100.0
+offset_left = 228.0
+offset_top = 104.0
+offset_right = 270.0
+offset_bottom = 146.0
 theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
 theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
 theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
@@ -777,10 +777,10 @@ vertical_alignment = 1
 
 [node name="Slot10" type="Button" parent="GearPanel/InventoryPage"]
 layout_mode = 0
-offset_left = 244.0
-offset_top = 72.0
-offset_right = 272.0
-offset_bottom = 100.0
+offset_left = 276.0
+offset_top = 104.0
+offset_right = 318.0
+offset_bottom = 146.0
 theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
 theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
 theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
@@ -808,10 +808,10 @@ vertical_alignment = 1
 
 [node name="Slot11" type="Button" parent="GearPanel/InventoryPage"]
 layout_mode = 0
-offset_left = 276.0
-offset_top = 72.0
-offset_right = 304.0
-offset_bottom = 100.0
+offset_left = 324.0
+offset_top = 104.0
+offset_right = 366.0
+offset_bottom = 146.0
 theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
 theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
 theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
@@ -840,9 +840,9 @@ vertical_alignment = 1
 [node name="Slot12" type="Button" parent="GearPanel/InventoryPage"]
 layout_mode = 0
 offset_left = 180.0
-offset_top = 104.0
-offset_right = 208.0
-offset_bottom = 132.0
+offset_top = 152.0
+offset_right = 222.0
+offset_bottom = 194.0
 theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
 theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
 theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
@@ -870,10 +870,10 @@ vertical_alignment = 1
 
 [node name="Slot13" type="Button" parent="GearPanel/InventoryPage"]
 layout_mode = 0
-offset_left = 212.0
-offset_top = 104.0
-offset_right = 240.0
-offset_bottom = 132.0
+offset_left = 228.0
+offset_top = 152.0
+offset_right = 270.0
+offset_bottom = 194.0
 theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
 theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
 theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
@@ -901,10 +901,10 @@ vertical_alignment = 1
 
 [node name="Slot14" type="Button" parent="GearPanel/InventoryPage"]
 layout_mode = 0
-offset_left = 244.0
-offset_top = 104.0
-offset_right = 272.0
-offset_bottom = 132.0
+offset_left = 276.0
+offset_top = 152.0
+offset_right = 318.0
+offset_bottom = 194.0
 theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
 theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
 theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
@@ -932,10 +932,10 @@ vertical_alignment = 1
 
 [node name="Slot15" type="Button" parent="GearPanel/InventoryPage"]
 layout_mode = 0
-offset_left = 276.0
-offset_top = 104.0
-offset_right = 304.0
-offset_bottom = 132.0
+offset_left = 324.0
+offset_top = 152.0
+offset_right = 366.0
+offset_bottom = 194.0
 theme_override_styles/disabled = SubResource("StyleBoxFlat_slot")
 theme_override_styles/focus = SubResource("StyleBoxFlat_slot")
 theme_override_styles/hover = SubResource("StyleBoxFlat_hover")

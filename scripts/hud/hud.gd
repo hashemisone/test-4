@@ -99,10 +99,7 @@ func _add_icon(button: Button) -> void:
 	icon.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	button.add_child(icon)
 	icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	icon.offset_left = 4
-	icon.offset_top = 3
-	icon.offset_right = -4
-	icon.offset_bottom = -9
+	_fit_icon(button)
 	icon.hide()
 
 
@@ -682,10 +679,28 @@ func _hide_tip() -> void:
 		_tip_off.visible = false
 
 
+func _fit_icon(button: Button) -> void:
+	var icon := button.get_node_or_null("Icon") as TextureRect
+	if icon == null:
+		return
+	var box := button.size
+	if box.x < 1.0:
+		box.x = button.offset_right - button.offset_left
+	if box.y < 1.0:
+		box.y = button.offset_bottom - button.offset_top
+	var pad := maxf(2.0, round(box.x * 0.1))
+	var caption := maxf(7.0, round(box.y * 0.22))
+	icon.offset_left = pad
+	icon.offset_top = pad
+	icon.offset_right = -pad
+	icon.offset_bottom = -caption
+
+
 func _show_item_icon(button: Button, item: ItemData) -> void:
 	var icon := button.get_node_or_null("Icon") as TextureRect
 	if icon == null:
 		return
+	_fit_icon(button)
 	if item != null and item.icon != null:
 		icon.texture = item.icon
 		icon.show()
