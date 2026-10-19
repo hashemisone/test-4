@@ -37,7 +37,7 @@ func _physics_process(delta: float) -> void:
 	attack_left = maxf(attack_left - delta, 0.0)
 	var direction := 0.0
 	var player := get_tree().get_first_node_in_group("player") as Node2D
-	if player != null and player.has_method("is_alive") and player.is_alive():
+	if player != null and player.has_method("is_alive") and player.is_alive() and EnemySight.on_screen(sprite):
 		var dx := player.global_position.x - global_position.x
 		sprite.flip_h = dx < 0.0
 		var same_floor := absf(player.global_position.y - global_position.y) < 48.0
