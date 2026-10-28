@@ -229,9 +229,7 @@ func roll_shop_stock(kept: bool = false) -> void:
 func prepare_market() -> void:
 	shop_market = true
 	_load_market()
-	if _market_free_ready():
-		market_free_at = int(Time.get_unix_time_from_system())
-		market_paid = 0
+	if _market_packed.is_empty():
 		_fill_shop_stock()
 		_save_market()
 		return
@@ -386,6 +384,8 @@ func _load_market() -> void:
 		return
 	market_free_at = int(parsed.get("free_at", 0))
 	market_paid = maxi(int(parsed.get("paid", 0)), 0)
+	if not parsed.has("free_used") and market_paid == 0:
+		market_free_at = 0
 	var stock = parsed.get("stock", [])
 	if typeof(stock) == TYPE_ARRAY:
 		_market_packed = stock
@@ -402,6 +402,7 @@ func _save_market() -> void:
 	file.store_string(JSON.stringify({
 		"free_at": market_free_at,
 		"paid": market_paid,
+		"free_used": true,
 		"stock": packed,
 	}))
 
