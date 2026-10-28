@@ -311,9 +311,10 @@ func _fill_shop_stock() -> void:
 
 
 func _item_name(item: ItemData) -> String:
+	var name := item.kind_id()
 	if item.display_name != "":
-		return item.display_name
-	return item.kind_id()
+		name = item.display_name
+	return "%s:%s" % [name, int(item.rarity)]
 
 
 func spend_coins(amount: int) -> bool:

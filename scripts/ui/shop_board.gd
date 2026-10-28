@@ -35,7 +35,7 @@ func restock() -> void:
 		var item := Loot.roll(1)
 		if item.is_coin():
 			continue
-		var kind := item.display_name if item.display_name != "" else item.kind_id()
+		var kind := PlayerState._item_name(item)
 		if seen.has(kind):
 			continue
 		item.permanent = market
